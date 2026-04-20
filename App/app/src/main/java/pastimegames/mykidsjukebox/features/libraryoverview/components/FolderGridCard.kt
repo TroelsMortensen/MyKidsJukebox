@@ -38,14 +38,14 @@ fun FolderGridCard(
             .fillMaxWidth()
             .height(400.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(48.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -71,7 +71,7 @@ fun FolderGridCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(36.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF22C55E),
                     contentColor = Color(0xFF052E16)
@@ -80,11 +80,7 @@ fun FolderGridCard(
                 Icon(
                     imageVector = Icons.Filled.PlayArrow,
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp)
-                )
-                Text(
-                    text = "Play",
-                    color = Color(0xFF052E16)
+                    modifier = Modifier.size(66.dp)
                 )
             }
         }
