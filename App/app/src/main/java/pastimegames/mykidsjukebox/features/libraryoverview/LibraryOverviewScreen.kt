@@ -112,6 +112,9 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
                 return@onItemClick
             }
             toDocumentFolder(context, clickedItem.targetUri)?.let { folderStack.add(it) }
+        },
+        onPlayClick = {
+            // Intentionally no-op for now; playback wiring comes later.
         }
     )
 
@@ -154,7 +157,8 @@ private fun LibraryOverviewContent(
         } else {
             FolderGrid(
                 items = state.gridItems,
-                onItemClick = actions.onItemClick
+                onItemClick = actions.onItemClick,
+                onPlayClick = actions.onPlayClick
             )
         }
     }

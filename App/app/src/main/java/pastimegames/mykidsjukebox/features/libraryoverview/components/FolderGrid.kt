@@ -13,7 +13,8 @@ import pastimegames.mykidsjukebox.data.library.FolderGridItem
 @Composable
 fun FolderGrid(
     items: List<FolderGridItem>,
-    onItemClick: (FolderGridItem) -> Unit
+    onItemClick: (FolderGridItem) -> Unit,
+    onPlayClick: (FolderGridItem) -> Unit
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -24,7 +25,8 @@ fun FolderGrid(
         items(items) { item ->
             FolderGridCard(
                 item = item,
-                onClick = { onItemClick(item) }
+                onClick = { onItemClick(item) },
+                onPlayClick = { onPlayClick(item) }
             )
         }
     }
