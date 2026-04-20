@@ -6,5 +6,5 @@ data class LibraryOverviewActions(
     val onSelectFolderClick: () -> Unit,
     val onBackClick: () -> Unit,
     val onParentalSettingsClick: () -> Unit,
-    val onFolderClick: (FolderGridItem) -> Unit
+    val onItemClick: (FolderGridItem) -> Unit
 )

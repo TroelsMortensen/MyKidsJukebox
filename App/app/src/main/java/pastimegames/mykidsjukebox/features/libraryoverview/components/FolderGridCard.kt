@@ -55,6 +55,7 @@ fun FolderGridCard(
                 val artworkWidth = minOf(maxWidth, maxHeight / 1.4f)
                 FolderArtwork(
                     artworkUri = item.artworkUri,
+                    itemKind = item.kind,
                     modifier = Modifier.width(artworkWidth)
                 )
             }

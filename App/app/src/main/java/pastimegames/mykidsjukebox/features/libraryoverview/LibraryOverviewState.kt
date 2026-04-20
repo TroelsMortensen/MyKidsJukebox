@@ -6,7 +6,7 @@ data class LibraryOverviewState(
     val isRootSelected: Boolean,
     val showBackButton: Boolean,
     val currentFolderName: String,
-    val folderItems: List<FolderGridItem>,
+    val gridItems: List<FolderGridItem>,
     val hasBrowsableContent: Boolean,
     val errorMessage: String?
 )

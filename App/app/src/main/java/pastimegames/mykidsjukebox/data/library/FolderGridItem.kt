@@ -2,10 +2,16 @@ package pastimegames.mykidsjukebox.data.library
 
 import android.net.Uri
 
+enum class LibraryItemKind {
+    Folder,
+    Audio
+}
+
 data class FolderGridItem(
     val name: String,
-    val folderUri: Uri,
+    val targetUri: Uri,
     val artworkUri: Uri?,
-    val childFolderCount: Int,
-    val audioFileCount: Int
+    val kind: LibraryItemKind,
+    val childFolderCount: Int? = null,
+    val audioFileCount: Int? = null
 )

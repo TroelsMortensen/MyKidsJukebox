@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.launch
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
+import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
 import pastimegames.mykidsjukebox.data.settings.RootFolderStore
 import pastimegames.mykidsjukebox.features.libraryoverview.components.EmptyFolderState
@@ -83,7 +84,7 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
     }
 
     val currentFolder = folderStack.lastOrNull()
-    val folderItems by produceState(initialValue = emptyList<FolderGridItem>(), currentFolder) {
+    val gridItems by produceState(initialValue = emptyList<FolderGridItem>(), currentFolder) {
         value = currentFolder?.let { scanner.listFolderItems(it) } ?: emptyList()
     }
     val hasBrowsableContent = currentFolder?.let { scanner.hasAnyBrowsableContent(it) } ?: false
@@ -92,7 +93,7 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
         isRootSelected = currentFolder != null,
         showBackButton = folderStack.size > 1,
         currentFolderName = currentFolder?.name ?: "Library",
-        folderItems = folderItems,
+        gridItems = gridItems,
         hasBrowsableContent = hasBrowsableContent,
         errorMessage = errorMessage
     )
@@ -106,8 +107,11 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
         onParentalSettingsClick = {
             // Placeholder for future parental settings screen.
         },
-        onFolderClick = { clickedFolder ->
-            toDocumentFolder(context, clickedFolder.folderUri)?.let { folderStack.add(it) }
+        onItemClick = onItemClick@{ clickedItem ->
+            if (clickedItem.kind != LibraryItemKind.Folder) {
+                return@onItemClick
+            }
+            toDocumentFolder(context, clickedItem.targetUri)?.let { folderStack.add(it) }
         }
     )
 
@@ -145,12 +149,12 @@ private fun LibraryOverviewContent(
         )
         LibraryHeader(title = state.currentFolderName)
 
-        if (state.folderItems.isEmpty()) {
+        if (state.gridItems.isEmpty()) {
             EmptyFolderState(hasBrowsableContent = state.hasBrowsableContent)
         } else {
             FolderGrid(
-                items = state.folderItems,
-                onFolderClick = actions.onFolderClick
+                items = state.gridItems,
+                onItemClick = actions.onItemClick
             )
         }
     }
