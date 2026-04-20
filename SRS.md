@@ -82,6 +82,7 @@ sealed class MediaNode {
         val duration: Long = 0 
     ) : MediaNode()
 }
+```
 
 ## Task 2: Visual Library (The Grid)
 *Goal: Replace text with the 'Netflix-style' grid.*
