@@ -1,0 +1,14 @@
+# Cursor Rules for Toddler Audio Jukebox
+
+# UI/UX Philosophy
+- TARGETS: Buttons must be at least 100dp x 100dp for toddler coordination.
+- DISTRACTIONS: No search bars, no progress bars, keep the UI simple and focused on the task.
+
+# Technical Preferences
+- Use Jetpack Compose for all UI.
+- Use Coil for image loading with crossfade enabled.
+- Use Media3 for all audio logic.
+- Ensure all file access uses the Scoped Storage / Storage Access Framework (SAF) approach for Android 13+.
+
+# Error Handling
+- If a folder has no image, use a high-contrast colorful placeholder icon, never a text "Error" message.

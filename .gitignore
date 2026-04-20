@@ -1,0 +1,56 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# JetBrains / Android Studio
+.idea/
+*.iml
+
+# Cursor / local agent state
+.cursor/
+
+# Gradle
+.gradle/
+**/build/
+local.properties
+
+# Kotlin / Java compiled output
+*.class
+out/
+
+# Android signing / generated artifacts
+*.apk
+*.aab
+*.ap_
+*.keystore
+*.jks
+
+# Logs and temp files
+*.log
+*.tmp
+
+
+# Local configuration (Security & Paths)
+# You have local.properties, but these are often missed:
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+google-services.json
+
+# Proguard / R8 (Shrinking/Obfuscation logs)
+# You don't want these in git; they change every build.
+configuration.txt
+mapping.txt
+seeds.txt
+usage.txt
+
+# NDK / Native
+obj/
+lib/
+
+# Virtual Devices (The stuff making your emulator screen black!)
+*.avd/
+*.ini
