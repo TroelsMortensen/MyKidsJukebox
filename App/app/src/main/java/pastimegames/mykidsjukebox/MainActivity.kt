@@ -173,14 +173,13 @@ private fun LibraryBrowserScreen(modifier: Modifier = Modifier) {
 
         Button(
             onClick = {
-                val startUri = rootUriString?.let(Uri::parse)
-                folderPicker.launch(startUri)
+                // Placeholder for future parental settings screen.
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
         ) {
-            Text("Change Library Folder")
+            Text("Parental Settings")
         }
 
         Text(

@@ -112,3 +112,4 @@ Make the "Back" button massive. In a nested world, the most common thing a toddl
 - **Sub-task 4.1:** Save current playback position (Timestamp) for every file in a local Room database or DataStore.
 - **Sub-task 4.2:** Auto-resume: When a file is clicked, start from the saved timestamp.
 - **Sub-task 4.3:** Hidden Settings: Implement a 3-second long-press on the screen corner to allow re-selecting the root folder.
+- **Sub-task 4.4:** Parental Settings: Add a protected "Change Library Folder" option in the parental settings screen instead of the main browsing view.
