@@ -54,3 +54,6 @@ lib/
 # Virtual Devices (The stuff making your emulator screen black!)
 *.avd/
 *.ini
+
+# Test data
+library-root/
