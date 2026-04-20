@@ -31,7 +31,7 @@ fun FolderArtwork(
                 .crossfade(true)
                 .build(),
             contentDescription = "Folder artwork",
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.Fit,
             modifier = modifier
                 .aspectRatio(1f / 1.4f)
         )

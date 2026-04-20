@@ -41,6 +41,11 @@ fun FolderGridCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = item.name,
+                textAlign = TextAlign.Center,
+                color = Color.White
+            )
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -53,11 +58,6 @@ fun FolderGridCard(
                     modifier = Modifier.width(artworkWidth)
                 )
             }
-            Text(
-                text = item.name,
-                textAlign = TextAlign.Center,
-                color = Color.White
-            )
         }
     }
 }
