@@ -2,11 +2,13 @@ package pastimegames.mykidsjukebox.features.libraryoverview.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,7 +29,7 @@ fun FolderGridCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(400.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B))
@@ -39,7 +41,18 @@ fun FolderGridCard(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            FolderArtwork(artworkUri = item.artworkUri)
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = true),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                val artworkWidth = minOf(maxWidth, maxHeight / 1.4f)
+                FolderArtwork(
+                    artworkUri = item.artworkUri,
+                    modifier = Modifier.width(artworkWidth)
+                )
+            }
             Text(
                 text = item.name,
                 textAlign = TextAlign.Center,

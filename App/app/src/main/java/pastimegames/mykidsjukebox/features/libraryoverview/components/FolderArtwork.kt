@@ -2,9 +2,8 @@ package pastimegames.mykidsjukebox.features.libraryoverview.components
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,7 +20,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
 @Composable
-fun FolderArtwork(artworkUri: Uri?) {
+fun FolderArtwork(
+    artworkUri: Uri?,
+    modifier: Modifier = Modifier
+) {
     if (artworkUri != null) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -30,17 +32,15 @@ fun FolderArtwork(artworkUri: Uri?) {
                 .build(),
             contentDescription = "Folder artwork",
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(110.dp)
+            modifier = modifier
+                .aspectRatio(1f / 1.4f)
         )
         return
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(110.dp)
+        modifier = modifier
+            .aspectRatio(1f / 1.4f)
             .background(color = Color(0xFFFBBF24), shape = RoundedCornerShape(14.dp)),
         contentAlignment = Alignment.Center
     ) {
