@@ -1,17 +1,9 @@
-package pastimegames.mykidsjukebox
+package pastimegames.mykidsjukebox.data.library
 
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 
 private val audioExtensions = setOf("mp3", "m4a", "wav")
-
-data class FolderGridItem(
-    val name: String,
-    val folderUri: Uri,
-    val artworkUri: Uri?,
-    val childFolderCount: Int,
-    val audioFileCount: Int
-)
 
 class LibraryScanner {
     fun listFolderItems(currentFolder: DocumentFile): List<FolderGridItem> {

@@ -1,4 +1,4 @@
-package pastimegames.mykidsjukebox
+package pastimegames.mykidsjukebox.data.settings
 
 import android.content.Context
 import androidx.datastore.preferences.core.Preferences
