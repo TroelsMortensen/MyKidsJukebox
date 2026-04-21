@@ -34,6 +34,17 @@ fun FolderGridCard(
     onClick: () -> Unit,
     onPlayClick: () -> Unit
 ) {
+    val cardBackgroundColor = when (item.kind) {
+        LibraryItemKind.Audio -> Color(0xFF475569)
+        LibraryItemKind.Folder -> {
+            if ((item.childFolderCount ?: 0) == 0) {
+                Color(0xFF334155)
+            } else {
+                Color(0xFF1E293B)
+            }
+        }
+    }
+
     val shouldShowPlayButton = when (item.kind) {
         LibraryItemKind.Audio -> true
         LibraryItemKind.Folder -> (item.childFolderCount ?: 0) == 0
@@ -45,7 +56,7 @@ fun FolderGridCard(
             .height(400.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(48.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B))
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
     ) {
         Column(
             modifier = Modifier
