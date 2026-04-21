@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
             MyKidsJukeboxTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     var route by remember { mutableStateOf<PlayerRoute>(PlayerRoute.Library) }
+                    var playerSessionId by remember { mutableStateOf(0L) }
                     val libraryFolderStackUris = remember { mutableStateListOf<String>() }
 
                     when (val currentRoute = route) {
@@ -33,10 +34,12 @@ class MainActivity : ComponentActivity() {
                             LibraryOverviewScreen(
                                 folderStackUris = libraryFolderStackUris,
                                 onOpenPlayer = { item ->
+                                    playerSessionId += 1
                                     route = PlayerRoute.Player(
                                         title = item.name,
                                         audioUri = item.targetUri,
-                                        artworkUri = item.artworkUri
+                                        artworkUri = item.artworkUri,
+                                        sessionId = playerSessionId
                                     )
                                 },
                                 modifier = Modifier.padding(innerPadding)

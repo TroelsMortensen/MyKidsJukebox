@@ -51,7 +51,7 @@ fun PlayerScreen(
 ) {
     val application = LocalContext.current.applicationContext as Application
     val viewModel: PlayerViewModel = viewModel(
-        key = "player-${route.audioUri}",
+        key = "player-${route.audioUri}-${route.sessionId}",
         factory = PlayerViewModel.factory(
             application = application,
             title = route.title,
@@ -61,7 +61,7 @@ fun PlayerScreen(
     )
     val state by viewModel.state.collectAsState()
     val handleBack = {
-        viewModel.stopPlayback()
+        viewModel.stopPlaybackForExit()
         onBack()
     }
 

@@ -8,6 +8,7 @@ sealed interface PlayerRoute {
     data class Player(
         val title: String,
         val audioUri: Uri,
-        val artworkUri: Uri?
+        val artworkUri: Uri?,
+        val sessionId: Long
     ) : PlayerRoute
 }

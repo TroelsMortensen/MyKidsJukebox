@@ -70,12 +70,18 @@ class PlayerViewModel(
         if (exoPlayer.isPlaying) {
             exoPlayer.pause()
         } else {
+            if (exoPlayer.playbackState == Player.STATE_IDLE) {
+                exoPlayer.prepare()
+            }
             exoPlayer.play()
         }
     }
 
-    fun stopPlayback() {
-        exoPlayer.stop()
+    fun stopPlaybackForExit() {
+        exoPlayer.pause()
+        exoPlayer.seekTo(0L)
+        exoPlayer.playWhenReady = false
+        refreshProgress()
     }
 
     private fun refreshProgress() {
