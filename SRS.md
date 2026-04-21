@@ -31,14 +31,15 @@ Establish persistent access to the Android file system and recursively map the l
 ## Task 3: The Minimalist Player
 *Goal: Audio playback with zero distractions.*
 
-- **Sub-task 3.1:** Integrate Media3 ExoPlayer.
-- **Sub-task 3.2:** Create a Player UI with ONLY:
-    - Giant Play/Pause button.
-    - Large 'Back' button (top left).
-    - Large 'Rewind 30s' button.
 - **Sub-task 3.3:** Background playback support (so the screen can be off).
 
-## Task 4: Persistence & Logic
+## Task 4: Queue
+*Goal: queue up audio files to play one after the other.*
+
+- When playing a file, it should automatically queue up all audio files in the same folder.
+- When clicking play on a series card, it should play the first file in the series folder, and queue up the rest.
+
+## Task 5: Persistence & Logic
 *Goal: Make it a reliable tool.*
 
 - **Sub-task 4.1:** Save current playback position (Timestamp) for every file in a local Room database or DataStore.
