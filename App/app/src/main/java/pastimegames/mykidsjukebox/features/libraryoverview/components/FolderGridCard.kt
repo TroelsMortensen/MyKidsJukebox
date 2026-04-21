@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -45,7 +44,7 @@ fun FolderGridCard(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -59,11 +58,11 @@ fun FolderGridCard(
                     .weight(1f, fill = true),
                 contentAlignment = Alignment.TopCenter
             ) {
-                val artworkWidth = minOf(maxWidth, maxHeight / 1.4f)
+                val artworkSize = minOf(maxWidth, maxHeight)
                 FolderArtwork(
                     artworkUri = item.artworkUri,
                     itemKind = item.kind,
-                    modifier = Modifier.width(artworkWidth)
+                    modifier = Modifier.size(artworkSize)
                 )
             }
             Button(

@@ -6,8 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import pastimegames.mykidsjukebox.features.playerview.PlayerRoute
+import pastimegames.mykidsjukebox.features.playerview.PlayerScreen
 import pastimegames.mykidsjukebox.features.libraryoverview.LibraryOverviewScreen
 import pastimegames.mykidsjukebox.ui.theme.MyKidsJukeboxTheme
 
@@ -18,7 +25,32 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyKidsJukeboxTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LibraryOverviewScreen(modifier = Modifier.padding(innerPadding))
+                    var route by remember { mutableStateOf<PlayerRoute>(PlayerRoute.Library) }
+                    val libraryFolderStackUris = remember { mutableStateListOf<String>() }
+
+                    when (val currentRoute = route) {
+                        PlayerRoute.Library -> {
+                            LibraryOverviewScreen(
+                                folderStackUris = libraryFolderStackUris,
+                                onOpenPlayer = { item ->
+                                    route = PlayerRoute.Player(
+                                        title = item.name,
+                                        audioUri = item.targetUri,
+                                        artworkUri = item.artworkUri
+                                    )
+                                },
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
+
+                        is PlayerRoute.Player -> {
+                            PlayerScreen(
+                                route = currentRoute,
+                                onBack = { route = PlayerRoute.Library },
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -36,14 +36,12 @@ fun FolderArtwork(
             contentDescription = "Folder artwork",
             contentScale = ContentScale.Fit,
             modifier = modifier
-                .aspectRatio(1f / 1.4f)
         )
         return
     }
 
     Box(
         modifier = modifier
-            .aspectRatio(1f / 1.4f)
             .background(color = Color(0xFFFBBF24), shape = RoundedCornerShape(14.dp)),
         contentAlignment = Alignment.Center
     ) {

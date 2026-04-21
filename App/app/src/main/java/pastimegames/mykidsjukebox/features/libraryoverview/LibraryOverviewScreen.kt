@@ -10,9 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -35,13 +35,16 @@ import pastimegames.mykidsjukebox.features.libraryoverview.components.SelectFold
 import pastimegames.mykidsjukebox.storage.toDocumentFolder
 
 @Composable
-fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
+fun LibraryOverviewScreen(
+    folderStackUris: SnapshotStateList<String>,
+    onOpenPlayer: (FolderGridItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     val scanner = remember { LibraryScanner() }
     val folderStore = remember { RootFolderStore(context) }
     val scope = rememberCoroutineScope()
     val rootUriString by folderStore.rootUriFlow.collectAsState(initial = null)
-    val folderStack = remember { mutableStateListOf<DocumentFile>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val folderPicker = rememberLauncherForActivityResult(
@@ -59,8 +62,8 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
             scope.launch {
                 folderStore.saveRootUri(uri.toString())
             }
-            folderStack.clear()
-            toDocumentFolder(context, uri)?.let { folderStack.add(it) }
+            folderStackUris.clear()
+            folderStackUris.add(uri.toString())
             errorMessage = null
         } catch (_: SecurityException) {
             errorMessage = "Could not keep access to this folder. Please select it again."
@@ -74,16 +77,23 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
             scope.launch {
                 folderStore.clearRootUri()
             }
-            folderStack.clear()
+            folderStackUris.clear()
             return@LaunchedEffect
         }
 
-        if (folderStack.isEmpty()) {
-            folderStack.add(doc)
+        if (folderStackUris.isEmpty()) {
+            folderStackUris.add(savedUri)
         }
     }
 
-    val currentFolder = folderStack.lastOrNull()
+    val currentFolder = folderStackUris
+        .lastOrNull()
+        ?.let { toDocumentFolder(context, Uri.parse(it)) }
+    LaunchedEffect(currentFolder, folderStackUris.size) {
+        if (folderStackUris.isNotEmpty() && currentFolder == null) {
+            folderStackUris.removeAt(folderStackUris.lastIndex)
+        }
+    }
     val gridItems by produceState(initialValue = emptyList<FolderGridItem>(), currentFolder) {
         value = currentFolder?.let { scanner.listFolderItems(it) } ?: emptyList()
     }
@@ -91,7 +101,7 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
 
     val uiState = LibraryOverviewState(
         isRootSelected = currentFolder != null,
-        showBackButton = folderStack.size > 1,
+        showBackButton = folderStackUris.size > 1,
         currentFolderName = currentFolder?.name ?: "Library",
         gridItems = gridItems,
         hasBrowsableContent = hasBrowsableContent,
@@ -100,21 +110,23 @@ fun LibraryOverviewScreen(modifier: Modifier = Modifier) {
     val actions = LibraryOverviewActions(
         onSelectFolderClick = { folderPicker.launch(null) },
         onBackClick = {
-            if (folderStack.isNotEmpty()) {
-                folderStack.removeAt(folderStack.lastIndex)
+            if (folderStackUris.isNotEmpty()) {
+                folderStackUris.removeAt(folderStackUris.lastIndex)
             }
-        },
-        onParentalSettingsClick = {
-            // Placeholder for future parental settings screen.
         },
         onItemClick = onItemClick@{ clickedItem ->
             if (clickedItem.kind != LibraryItemKind.Folder) {
                 return@onItemClick
             }
-            toDocumentFolder(context, clickedItem.targetUri)?.let { folderStack.add(it) }
+            toDocumentFolder(context, clickedItem.targetUri)?.let {
+                folderStackUris.add(clickedItem.targetUri.toString())
+            }
         },
-        onPlayClick = {
-            // Intentionally no-op for now; playback wiring comes later.
+        onPlayClick = onPlayClick@{ clickedItem ->
+            if (clickedItem.kind != LibraryItemKind.Audio) {
+                return@onPlayClick
+            }
+            onOpenPlayer(clickedItem)
         }
     )
 
@@ -147,8 +159,7 @@ private fun LibraryOverviewContent(
 
         NavigationButtons(
             showBackButton = state.showBackButton,
-            onBackClick = actions.onBackClick,
-            onParentalSettingsClick = actions.onParentalSettingsClick
+            onBackClick = actions.onBackClick
         )
         LibraryHeader(title = state.currentFolderName)
 
