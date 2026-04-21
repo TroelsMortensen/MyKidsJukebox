@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
+import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 
 @Composable
 fun FolderGridCard(
@@ -32,6 +34,11 @@ fun FolderGridCard(
     onClick: () -> Unit,
     onPlayClick: () -> Unit
 ) {
+    val shouldShowPlayButton = when (item.kind) {
+        LibraryItemKind.Audio -> true
+        LibraryItemKind.Folder -> (item.childFolderCount ?: 0) == 0
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,21 +72,29 @@ fun FolderGridCard(
                     modifier = Modifier.size(artworkSize)
                 )
             }
-            Button(
-                onClick = onPlayClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(72.dp),
-                shape = RoundedCornerShape(36.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF22C55E),
-                    contentColor = Color(0xFF052E16)
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(66.dp)
+            if (shouldShowPlayButton) {
+                Button(
+                    onClick = onPlayClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(72.dp),
+                    shape = RoundedCornerShape(36.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF22C55E),
+                        contentColor = Color(0xFF052E16)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(66.dp)
+                    )
+                }
+            } else {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(72.dp)
                 )
             }
         }
