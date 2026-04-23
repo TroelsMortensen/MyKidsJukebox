@@ -1,14 +1,18 @@
 package pastimegames.mykidsjukebox.features.playerview
 
 import android.app.Application
+import android.content.ComponentName
+import android.os.Bundle
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionToken
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,12 +27,9 @@ class PlayerViewModel(
     startIndex: Int,
     initialWindowSize: Int
 ) : AndroidViewModel(application) {
-
-    private val exoPlayer = ExoPlayer.Builder(application).build()
     private val orderedFolderItems = folderAudioItems
     private val safeStartIndex = startIndex.coerceIn(0, (orderedFolderItems.size - 1).coerceAtLeast(0))
     private val queueWindowSize = initialWindowSize.coerceAtLeast(2)
-    private var nextFolderIndexToEnqueue = safeStartIndex
     private val _state = MutableStateFlow(
         PlayerState(
             title = orderedFolderItems.getOrNull(safeStartIndex)?.title ?: "Unknown Audio",
@@ -42,120 +43,96 @@ class PlayerViewModel(
     val state: StateFlow<PlayerState> = _state.asStateFlow()
 
     private var progressJob: Job? = null
+    private var mediaController: MediaController? = null
+    private var hasSentInitialQueue = false
+    private val sessionToken = SessionToken(
+        application,
+        ComponentName(application, PlaybackService::class.java)
+    )
+    private val controllerFuture = MediaController.Builder(application, sessionToken).buildAsync()
 
-    private val playerListener = object : Player.Listener {
+    private val controllerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             _state.update { current -> current.copy(isPlaying = isPlaying) }
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
-            ensureQueueDepth()
             refreshProgress()
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            trimConsumedQueueItems()
-            ensureQueueDepth()
             refreshCurrentTrackMetadata()
             refreshProgress()
         }
     }
 
     init {
-        if (orderedFolderItems.isNotEmpty()) {
-            exoPlayer.addListener(playerListener)
-            val initialMediaItems = mutableListOf<MediaItem>()
-            while (
-                initialMediaItems.size < queueWindowSize &&
-                nextFolderIndexToEnqueue < orderedFolderItems.size
-            ) {
-                initialMediaItems += buildMediaItem(nextFolderIndexToEnqueue)
-                nextFolderIndexToEnqueue += 1
-            }
-            exoPlayer.setMediaItems(initialMediaItems, 0, 0L)
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
+        controllerFuture.addListener({
+            val controller = controllerFuture.get()
+            mediaController = controller
+            controller.addListener(controllerListener)
+            sendQueueCommandIfNeeded()
             refreshCurrentTrackMetadata()
+            refreshProgress()
+        }, ContextCompat.getMainExecutor(application))
 
-            progressJob = viewModelScope.launch {
-                while (true) {
-                    refreshProgress()
-                    delay(250)
-                }
+        progressJob = viewModelScope.launch {
+            while (true) {
+                refreshProgress()
+                delay(250)
             }
         }
     }
 
     fun togglePlayPause() {
-        if (exoPlayer.isPlaying) {
-            exoPlayer.pause()
+        val controller = mediaController ?: return
+        if (controller.isPlaying) {
+            controller.pause()
         } else {
-            if (exoPlayer.playbackState == Player.STATE_IDLE) {
-                exoPlayer.prepare()
+            if (controller.playbackState == Player.STATE_IDLE) {
+                controller.prepare()
             }
-            exoPlayer.play()
+            controller.play()
         }
     }
 
     fun stopPlaybackForExit() {
-        exoPlayer.pause()
-        exoPlayer.seekTo(0L)
-        exoPlayer.playWhenReady = false
+        val controller = mediaController ?: return
+        controller.pause()
+        controller.seekTo(0L)
+        controller.playWhenReady = false
         refreshProgress()
     }
 
     private fun refreshProgress() {
-        val duration = exoPlayer.duration.takeIf { it > 0L } ?: 0L
+        val controller = mediaController ?: return
+        val duration = controller.duration.takeIf { it > 0L } ?: 0L
         _state.update { current ->
             current.copy(
                 durationMs = duration,
-                positionMs = exoPlayer.currentPosition.coerceAtLeast(0L),
-                isPlaying = exoPlayer.isPlaying
+                positionMs = controller.currentPosition.coerceAtLeast(0L),
+                isPlaying = controller.isPlaying
             )
         }
     }
 
-    private fun buildMediaItem(folderIndex: Int): MediaItem {
-        val item = orderedFolderItems[folderIndex]
-        val metadata = MediaMetadata.Builder()
-            .setTitle(item.title)
-            .setArtworkUri(item.artworkUri)
-            .build()
-
-        return MediaItem.Builder()
-            .setMediaId(folderIndex.toString())
-            .setUri(item.audioUri)
-            .setMediaMetadata(metadata)
-            .build()
-    }
-
-    private fun trimConsumedQueueItems() {
-        val currentIndex = exoPlayer.currentMediaItemIndex
-        if (currentIndex <= 0) {
+    private fun sendQueueCommandIfNeeded() {
+        if (hasSentInitialQueue || orderedFolderItems.isEmpty()) {
             return
         }
-        exoPlayer.removeMediaItems(0, currentIndex)
-    }
-
-    private fun ensureQueueDepth() {
-        if (orderedFolderItems.isEmpty()) {
-            return
-        }
-
-        val desiredUpcomingDepth = queueWindowSize - 1
-        var remainingUpcoming = exoPlayer.mediaItemCount - (exoPlayer.currentMediaItemIndex + 1)
-        while (
-            remainingUpcoming < desiredUpcomingDepth &&
-            nextFolderIndexToEnqueue < orderedFolderItems.size
-        ) {
-            exoPlayer.addMediaItem(buildMediaItem(nextFolderIndexToEnqueue))
-            nextFolderIndexToEnqueue += 1
-            remainingUpcoming += 1
-        }
+        hasSentInitialQueue = true
+        val controller = mediaController ?: return
+        val payload = QueueCommandPayload(
+            items = orderedFolderItems,
+            startIndex = safeStartIndex,
+            queueWindowSize = queueWindowSize
+        )
+        val command = SessionCommand(COMMAND_SET_QUEUE, Bundle.EMPTY)
+        controller.sendCustomCommand(command, payload.toBundle())
     }
 
     private fun refreshCurrentTrackMetadata() {
-        val mediaId = exoPlayer.currentMediaItem?.mediaId
+        val mediaId = mediaController?.currentMediaItem?.mediaId
         val folderIndex = mediaId?.toIntOrNull() ?: safeStartIndex
         val currentItem = orderedFolderItems.getOrNull(folderIndex) ?: return
 
@@ -170,8 +147,9 @@ class PlayerViewModel(
 
     override fun onCleared() {
         progressJob?.cancel()
-        exoPlayer.removeListener(playerListener)
-        exoPlayer.release()
+        mediaController?.removeListener(controllerListener)
+        mediaController?.release()
+        mediaController = null
         super.onCleared()
     }
 
