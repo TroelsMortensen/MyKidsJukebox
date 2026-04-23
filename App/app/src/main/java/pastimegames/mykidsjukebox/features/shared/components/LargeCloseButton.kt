@@ -26,7 +26,7 @@ fun LargeCloseButton(
         modifier = modifier
             .fillMaxWidth()
             .height(100.dp),
-        shape = RoundedCornerShape(30.dp),
+        shape = RoundedCornerShape(50.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error,
             contentColor = MaterialTheme.colorScheme.onError
@@ -35,7 +35,7 @@ fun LargeCloseButton(
         Icon(
             imageVector = Icons.Filled.Close,
             contentDescription = stringResource(R.string.close),
-            modifier = Modifier.size(56.dp)
+            modifier = Modifier.size(70.dp)
         )
     }
 }

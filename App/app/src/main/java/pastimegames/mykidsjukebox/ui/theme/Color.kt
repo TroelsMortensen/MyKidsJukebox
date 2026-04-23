@@ -4,10 +4,10 @@ import androidx.compose.ui.graphics.Color
 
 // Storybook Cozy palette
 val CozyCream = Color(0xFFFFF8EF)
-val CozyPaper = Color(0xFFFFF3E0)
-val CozySky = Color(0xFFEAF4FF)
+val CozyPaper = Color(0xFFF3E4CF)
+val CozySky = Color(0xFFE4EEF8)
 val CozyInk = Color(0xFF2F2A25)
-val CozyInkMuted = Color(0xFF6B6258)
+val CozyInkMuted = Color(0xFF5C534A)
 
 val CozyCoral = Color(0xFFE67E73)
 val CozyLeaf = Color(0xFF6FBF8F)
