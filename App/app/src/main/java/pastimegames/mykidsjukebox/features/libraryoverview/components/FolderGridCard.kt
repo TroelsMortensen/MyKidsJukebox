@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,11 +45,12 @@ fun FolderGridCard(
     }
 
     val shouldShowPlayButton = item.kind == LibraryItemKind.Audio
+    val cardHeight = if (item.kind == LibraryItemKind.Audio) 400.dp else 320.dp
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(cardHeight)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(48.dp),
         colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
@@ -98,12 +98,6 @@ fun FolderGridCard(
                         modifier = Modifier.size(66.dp)
                     )
                 }
-            } else {
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(72.dp)
-                )
             }
         }
     }
