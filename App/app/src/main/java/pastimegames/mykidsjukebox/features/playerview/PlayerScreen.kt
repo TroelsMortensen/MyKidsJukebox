@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Pause
@@ -202,15 +203,18 @@ private fun UpcomingQueueRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val queueItemSize = maxWidth * 0.20f
+            val baseQueueItemSize = maxWidth * 0.20f
+            val queueShrinkStep = 6.dp
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(
                     space = 12.dp,
                     alignment = Alignment.CenterHorizontally
                 )
             ) {
-                items(items) { queueItem ->
+                itemsIndexed(items) { index, queueItem ->
+                    val queueItemSize = baseQueueItemSize - (queueShrinkStep * index)
                     QueueArtworkThumbnail(
                         item = queueItem,
                         itemSize = queueItemSize,
