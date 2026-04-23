@@ -36,10 +36,10 @@ fun FolderGridCard(
     val cardBackgroundColor = when (item.kind) {
         LibraryItemKind.Audio -> Color(0xFF475569)
         LibraryItemKind.Folder -> {
-            if ((item.childFolderCount ?: 0) == 0) {
-                Color(0xFF334155)
-            } else {
-                Color(0xFF1E293B)
+            when (item.childFolderCount) {
+                null -> Color(0xFF1E293B)
+                0 -> Color(0xFF334155)
+                else -> Color(0xFF1E293B)
             }
         }
     }
@@ -76,6 +76,7 @@ fun FolderGridCard(
                 val artworkSize = minOf(maxWidth, maxHeight)
                 FolderArtwork(
                     artworkUri = item.artworkUri,
+                    artworkIsLoading = item.artworkIsLoading,
                     itemKind = item.kind,
                     modifier = Modifier.size(artworkSize)
                 )

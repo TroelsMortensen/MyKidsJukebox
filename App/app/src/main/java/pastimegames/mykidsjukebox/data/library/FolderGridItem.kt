@@ -11,6 +11,7 @@ data class FolderGridItem(
     val name: String,
     val targetUri: Uri,
     val artworkUri: Uri?,
+    val artworkIsLoading: Boolean = false,
     val kind: LibraryItemKind,
     val childFolderCount: Int? = null,
     val audioFileCount: Int? = null

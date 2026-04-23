@@ -22,7 +22,10 @@ fun FolderGrid(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(items) { item ->
+        items(
+            items = items,
+            key = { item -> item.targetUri.toString() }
+        ) { item ->
             FolderGridCard(
                 item = item,
                 onClick = { onItemClick(item) },

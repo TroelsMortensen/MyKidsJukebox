@@ -6,19 +6,30 @@ import androidx.documentfile.provider.DocumentFile
 private val audioExtensions = setOf("mp3", "m4a", "wav")
 
 class LibraryScanner {
-    fun listFolderItems(currentFolder: DocumentFile): List<FolderGridItem> {
+    data class QuickScanResult(
+        val items: List<FolderGridItem>,
+        val currentFolderChildren: Array<DocumentFile>,
+        val childDirectoriesByUri: Map<Uri, DocumentFile>
+    )
+
+    data class FolderCounts(
+        val childFolderCount: Int,
+        val audioFileCount: Int
+    )
+
+    fun listFolderItemsQuick(currentFolder: DocumentFile): QuickScanResult {
         val children = currentFolder.listFiles()
         val folderItems = children
             .filter { it.isDirectory }
             .map { folder ->
-                val folderChildren = folder.listFiles()
                 FolderGridItem(
                     name = folder.name ?: "Unknown",
                     targetUri = folder.uri,
-                    artworkUri = findFolderArtworkUri(folderChildren),
+                    artworkUri = null,
+                    artworkIsLoading = true,
                     kind = LibraryItemKind.Folder,
-                    childFolderCount = folderChildren.count { it.isDirectory },
-                    audioFileCount = folderChildren.count { it.isAudioFile() }
+                    childFolderCount = null,
+                    audioFileCount = null
                 )
             }
 
@@ -28,12 +39,47 @@ class LibraryScanner {
                 FolderGridItem(
                     name = audio.displayNameWithoutExtension(),
                     targetUri = audio.uri,
-                    artworkUri = findAudioArtworkUri(audio, children),
+                    artworkUri = null,
+                    artworkIsLoading = true,
                     kind = LibraryItemKind.Audio
                 )
             }
 
-        return (folderItems + audioItems).sortedBy { it.name.lowercase() }
+        return QuickScanResult(
+            items = (folderItems + audioItems).sortedBy { it.name.lowercase() },
+            currentFolderChildren = children,
+            childDirectoriesByUri = children
+                .filter { it.isDirectory }
+                .associateBy { it.uri }
+        )
+    }
+
+    fun resolveArtworkForItem(item: FolderGridItem, quickScanResult: QuickScanResult): Uri? {
+        return when (item.kind) {
+            LibraryItemKind.Folder -> {
+                val directory = quickScanResult.childDirectoriesByUri[item.targetUri] ?: return null
+                findFolderArtworkUri(directory.listFiles())
+            }
+
+            LibraryItemKind.Audio -> {
+                val audioDocument = quickScanResult.currentFolderChildren
+                    .firstOrNull { child -> child.uri == item.targetUri && child.isFile }
+                    ?: return null
+                findAudioArtworkUri(audioDocument, quickScanResult.currentFolderChildren)
+            }
+        }
+    }
+
+    fun resolveFolderCounts(item: FolderGridItem, quickScanResult: QuickScanResult): FolderCounts? {
+        if (item.kind != LibraryItemKind.Folder) {
+            return null
+        }
+        val directory = quickScanResult.childDirectoriesByUri[item.targetUri] ?: return null
+        val folderChildren = directory.listFiles()
+        return FolderCounts(
+            childFolderCount = folderChildren.count { it.isDirectory },
+            audioFileCount = folderChildren.count { it.isAudioFile() }
+        )
     }
 
     fun hasAnyBrowsableContent(folder: DocumentFile): Boolean {

@@ -13,8 +13,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -22,7 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
 import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
@@ -45,6 +48,7 @@ fun LibraryOverviewScreen(
     val folderStore = remember { RootFolderStore(context) }
     val scope = rememberCoroutineScope()
     val rootUriString by folderStore.rootUriFlow.collectAsState(initial = null)
+    val artworkCacheByFolder = remember { mutableStateMapOf<String, MutableMap<String, Uri?>>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val folderPicker = rememberLauncherForActivityResult(
@@ -94,10 +98,51 @@ fun LibraryOverviewScreen(
             folderStackUris.removeAt(folderStackUris.lastIndex)
         }
     }
-    val gridItems by produceState(initialValue = emptyList<FolderGridItem>(), currentFolder) {
-        value = currentFolder?.let { scanner.listFolderItems(it) } ?: emptyList()
+    var gridItems by remember(currentFolder?.uri?.toString()) { mutableStateOf(emptyList<FolderGridItem>()) }
+    var hasBrowsableContent by remember(currentFolder?.uri?.toString()) { mutableStateOf(false) }
+    LaunchedEffect(currentFolder?.uri?.toString()) {
+        val folder = currentFolder
+        if (folder == null) {
+            gridItems = emptyList()
+            hasBrowsableContent = false
+            return@LaunchedEffect
+        }
+
+        val quickScan = withContext(Dispatchers.IO) { scanner.listFolderItemsQuick(folder) }
+        gridItems = quickScan.items
+        hasBrowsableContent = quickScan.items.isNotEmpty() ||
+            withContext(Dispatchers.IO) { scanner.hasAnyBrowsableContent(folder) }
+
+        val folderKey = folder.uri.toString()
+        val folderArtworkCache = artworkCacheByFolder.getOrPut(folderKey) { mutableMapOf() }
+        coroutineScope {
+            quickScan.items.forEach { baseItem ->
+                launch(Dispatchers.IO) {
+                    val itemKey = baseItem.targetUri.toString()
+                    val cachedArtworkUri = folderArtworkCache[itemKey]
+                    val resolvedArtworkUri = cachedArtworkUri ?: scanner
+                        .resolveArtworkForItem(baseItem, quickScan)
+                        .also { resolved -> folderArtworkCache[itemKey] = resolved }
+                    val folderCounts = scanner.resolveFolderCounts(baseItem, quickScan)
+
+                    withContext(Dispatchers.Main) {
+                        gridItems = gridItems.map { item ->
+                            if (item.targetUri == baseItem.targetUri) {
+                                item.copy(
+                                    artworkUri = resolvedArtworkUri ?: item.artworkUri,
+                                    artworkIsLoading = false,
+                                    childFolderCount = folderCounts?.childFolderCount ?: item.childFolderCount,
+                                    audioFileCount = folderCounts?.audioFileCount ?: item.audioFileCount
+                                )
+                            } else {
+                                item
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    val hasBrowsableContent = currentFolder?.let { scanner.hasAnyBrowsableContent(it) } ?: false
 
     val uiState = LibraryOverviewState(
         isRootSelected = currentFolder != null,
