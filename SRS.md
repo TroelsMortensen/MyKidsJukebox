@@ -51,6 +51,12 @@ Establish persistent access to the Android file system and recursively map the l
 
 To be figured out.
 
-## Task 7: Spotify
+- Optional “simple mode” toggle in parental settings (e.g., hide times/progress).
+
+## Task: Spotify
 
 Det kunne være smart hvis jeg kunne linke til spotify.
+
+## Task: app feedback
+
+- Tiny audio cue on successful taps (optional, careful not distracting).

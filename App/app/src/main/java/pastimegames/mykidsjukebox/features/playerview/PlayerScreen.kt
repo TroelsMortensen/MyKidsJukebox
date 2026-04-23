@@ -2,6 +2,8 @@ package pastimegames.mykidsjukebox.features.playerview
 
 import android.app.Application
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,16 +37,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import pastimegames.mykidsjukebox.R
 import pastimegames.mykidsjukebox.features.shared.components.LargeCloseButton
 
 @Composable
@@ -95,7 +99,8 @@ private fun PlayerContent(
 
         Text(
             text = state.title,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         PlayerArtwork(
@@ -122,7 +127,9 @@ private fun PlayerContent(
                 progress = { state.progress },
                 modifier = Modifier
                     .weight(1f)
-                    .height(10.dp)
+                    .height(10.dp),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(Modifier.width(8.dp))
             Text(
@@ -134,20 +141,30 @@ private fun PlayerContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        val playButtonScale by animateFloatAsState(
+            targetValue = if (state.isPlaying) 0.98f else 1f,
+            animationSpec = tween(durationMillis = 180),
+            label = "play-button-scale"
+        )
         Button(
             onClick = onPlayPauseClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(210.dp),
+                .height(210.dp)
+                .scale(playButtonScale),
             shape = RoundedCornerShape(percent = 50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF22C55E),
-                contentColor = if (state.isPlaying) Color(0xFF052E16) else Color.White
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
             )
         ) {
             Icon(
                 imageVector = if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                contentDescription = if (state.isPlaying) "Pause" else "Play",
+                contentDescription = if (state.isPlaying) {
+                    stringResource(R.string.pause)
+                } else {
+                    stringResource(R.string.play)
+                },
                 modifier = Modifier.size(200.dp)
             )
         }
@@ -163,20 +180,30 @@ private fun UpcomingQueueRow(
         return
     }
 
-    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val queueItemSize = maxWidth * 0.20f
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(
-                space = 12.dp,
-                alignment = Alignment.CenterHorizontally
-            )
-        ) {
-            items(items) { queueItem ->
-                QueueArtworkThumbnail(
-                    item = queueItem,
-                    itemSize = queueItemSize
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.up_next),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val queueItemSize = maxWidth * 0.20f
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(
+                    space = 12.dp,
+                    alignment = Alignment.CenterHorizontally
                 )
+            ) {
+                items(items) { queueItem ->
+                    QueueArtworkThumbnail(
+                        item = queueItem,
+                        itemSize = queueItemSize
+                    )
+                }
             }
         }
     }
@@ -194,7 +221,7 @@ private fun QueueArtworkThumbnail(
                 .data(item.artworkUri)
                 .crossfade(true)
                 .build(),
-            contentDescription = "Upcoming audio artwork for ${item.title}",
+            contentDescription = stringResource(R.string.upcoming_artwork_description, item.title),
             contentScale = ContentScale.Crop,
             modifier = modifier
                 .size(itemSize)
@@ -206,13 +233,16 @@ private fun QueueArtworkThumbnail(
     Box(
         modifier = modifier
             .size(itemSize)
-            .background(color = Color(0xFFFBBF24), shape = RoundedCornerShape(14.dp)),
+            .background(
+                color = MaterialTheme.colorScheme.tertiary,
+                shape = RoundedCornerShape(14.dp)
+            ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Filled.Audiotrack,
-            contentDescription = "Default upcoming artwork",
-            tint = Color(0xFFB91C1C),
+            contentDescription = stringResource(R.string.default_upcoming_artwork_description),
+            tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(42.dp)
         )
     }
@@ -229,7 +259,7 @@ private fun PlayerArtwork(
                 .data(artworkUri)
                 .crossfade(true)
                 .build(),
-            contentDescription = "Current audio artwork",
+            contentDescription = stringResource(R.string.current_audio_artwork_description),
             contentScale = ContentScale.Fit,
             modifier = modifier.aspectRatio(1f)
         )
@@ -239,13 +269,16 @@ private fun PlayerArtwork(
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .background(color = Color(0xFFFBBF24), shape = RoundedCornerShape(18.dp)),
+            .background(
+                color = MaterialTheme.colorScheme.tertiary,
+                shape = RoundedCornerShape(18.dp)
+            ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = Icons.Filled.Audiotrack,
-            contentDescription = "Default audio artwork",
-            tint = Color(0xFFB91C1C),
+            contentDescription = stringResource(R.string.default_audio_artwork_description),
+            tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(96.dp)
         )
     }

@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,7 @@ import pastimegames.mykidsjukebox.features.libraryoverview.components.FolderGrid
 import pastimegames.mykidsjukebox.features.libraryoverview.components.LibraryHeader
 import pastimegames.mykidsjukebox.features.libraryoverview.components.NavigationButtons
 import pastimegames.mykidsjukebox.features.libraryoverview.components.SelectFolderState
+import pastimegames.mykidsjukebox.R
 import pastimegames.mykidsjukebox.storage.toDocumentFolder
 
 @Composable
@@ -70,7 +72,7 @@ fun LibraryOverviewScreen(
             folderStackUris.add(uri.toString())
             errorMessage = null
         } catch (_: SecurityException) {
-            errorMessage = "Could not keep access to this folder. Please select it again."
+            errorMessage = context.getString(R.string.select_folder_permission_error)
         }
     }
 
@@ -147,7 +149,7 @@ fun LibraryOverviewScreen(
     val uiState = LibraryOverviewState(
         isRootSelected = currentFolder != null,
         showBackButton = folderStackUris.size > 1,
-        currentFolderName = currentFolder?.name ?: "Library",
+        currentFolderName = currentFolder?.name ?: stringResource(R.string.library_title),
         gridItems = gridItems,
         hasBrowsableContent = hasBrowsableContent,
         errorMessage = errorMessage
@@ -201,7 +203,9 @@ private fun LibraryOverviewContent(
         if (!state.isRootSelected) {
             SelectFolderState(
                 onSelectFolderClick = actions.onSelectFolderClick,
-                errorMessage = state.errorMessage
+                errorMessage = state.errorMessage,
+                message = stringResource(R.string.select_folder_message),
+                buttonLabel = stringResource(R.string.select_folder_button)
             )
             return@Column
         }
@@ -213,7 +217,13 @@ private fun LibraryOverviewContent(
         LibraryHeader(title = state.currentFolderName)
 
         if (state.gridItems.isEmpty()) {
-            EmptyFolderState(hasBrowsableContent = state.hasBrowsableContent)
+            EmptyFolderState(
+                message = if (state.hasBrowsableContent) {
+                    stringResource(R.string.empty_folder_has_content_elsewhere)
+                } else {
+                    stringResource(R.string.empty_folder_message)
+                }
+            )
         } else {
             FolderGrid(
                 items = state.gridItems,

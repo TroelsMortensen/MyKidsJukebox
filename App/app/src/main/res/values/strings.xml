@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">MyKidsJukebox</string>
+    <string name="library_title">Library</string>
+    <string name="select_folder_message">Choose your story library folder to begin.</string>
+    <string name="select_folder_button">Choose Library Folder</string>
+    <string name="select_folder_permission_error">Could not keep access to this folder. Please choose it again.</string>
+    <string name="empty_folder_has_content_elsewhere">No stories in this folder. Try going back.</string>
+    <string name="empty_folder_message">This folder is empty.</string>
+    <string name="up_next">Up next</string>
+    <string name="close">Close</string>
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="folder_artwork_description">Folder artwork</string>
+    <string name="folder_icon_description">Folder</string>
+    <string name="audiobook_icon_description">Audiobook</string>
+    <string name="upcoming_artwork_description">Upcoming audio artwork for %1$s</string>
+    <string name="default_upcoming_artwork_description">Default upcoming artwork</string>
+    <string name="current_audio_artwork_description">Current audio artwork</string>
+    <string name="default_audio_artwork_description">Default audio artwork</string>
 </resources>

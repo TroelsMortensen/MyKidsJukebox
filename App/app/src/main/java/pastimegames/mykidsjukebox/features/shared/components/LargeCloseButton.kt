@@ -8,10 +8,13 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import pastimegames.mykidsjukebox.R
 
 @Composable
 fun LargeCloseButton(
@@ -23,14 +26,15 @@ fun LargeCloseButton(
         modifier = modifier
             .fillMaxWidth()
             .height(100.dp),
+        shape = RoundedCornerShape(30.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFDC2626),
-            contentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
         )
     ) {
         Icon(
             imageVector = Icons.Filled.Close,
-            contentDescription = "Close",
+            contentDescription = stringResource(R.string.close),
             modifier = Modifier.size(56.dp)
         )
     }
