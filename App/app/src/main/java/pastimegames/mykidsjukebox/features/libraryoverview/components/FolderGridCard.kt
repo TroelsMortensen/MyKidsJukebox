@@ -45,10 +45,7 @@ fun FolderGridCard(
         }
     }
 
-    val shouldShowPlayButton = when (item.kind) {
-        LibraryItemKind.Audio -> true
-        LibraryItemKind.Folder -> (item.childFolderCount ?: 0) == 0
-    }
+    val shouldShowPlayButton = item.kind == LibraryItemKind.Audio
 
     Card(
         modifier = Modifier
