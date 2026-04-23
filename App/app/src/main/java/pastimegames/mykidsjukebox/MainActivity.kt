@@ -13,7 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.features.playerview.PlayerRoute
+import pastimegames.mykidsjukebox.features.playerview.PlayerQueueItem
 import pastimegames.mykidsjukebox.features.playerview.PlayerScreen
 import pastimegames.mykidsjukebox.features.libraryoverview.LibraryOverviewScreen
 import pastimegames.mykidsjukebox.ui.theme.MyKidsJukeboxTheme
@@ -33,12 +35,20 @@ class MainActivity : ComponentActivity() {
                         PlayerRoute.Library -> {
                             LibraryOverviewScreen(
                                 folderStackUris = libraryFolderStackUris,
-                                onOpenPlayer = { item ->
+                                onOpenPlayer = { audioItems, startIndex ->
                                     playerSessionId += 1
                                     route = PlayerRoute.Player(
-                                        title = item.name,
-                                        audioUri = item.targetUri,
-                                        artworkUri = item.artworkUri,
+                                        folderAudioItems = audioItems
+                                            .filter { it.kind == LibraryItemKind.Audio }
+                                            .map { item ->
+                                                PlayerQueueItem(
+                                                    title = item.name,
+                                                    audioUri = item.targetUri,
+                                                    artworkUri = item.artworkUri
+                                                )
+                                            },
+                                        startIndex = startIndex,
+                                        initialWindowSize = 5,
                                         sessionId = playerSessionId
                                     )
                                 },

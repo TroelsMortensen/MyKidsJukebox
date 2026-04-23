@@ -37,7 +37,7 @@ import pastimegames.mykidsjukebox.storage.toDocumentFolder
 @Composable
 fun LibraryOverviewScreen(
     folderStackUris: SnapshotStateList<String>,
-    onOpenPlayer: (FolderGridItem) -> Unit,
+    onOpenPlayer: (List<FolderGridItem>, Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -126,7 +126,11 @@ fun LibraryOverviewScreen(
             if (clickedItem.kind != LibraryItemKind.Audio) {
                 return@onPlayClick
             }
-            onOpenPlayer(clickedItem)
+            val audioItems = gridItems.filter { it.kind == LibraryItemKind.Audio }
+            val selectedIndex = audioItems.indexOfFirst { it.targetUri == clickedItem.targetUri }
+            if (selectedIndex >= 0) {
+                onOpenPlayer(audioItems, selectedIndex)
+            }
         }
     )
 

@@ -46,3 +46,11 @@ Establish persistent access to the Android file system and recursively map the l
 - **Sub-task 4.2:** Auto-resume: When a file is clicked, start from the saved timestamp.
 - **Sub-task 4.3:** Hidden Settings: Implement a 3-second long-press on the screen corner to allow re-selecting the root folder.
 - **Sub-task 4.4:** Parental Settings: Add a protected "Change Library Folder" option in the parental settings screen instead of the main browsing view.
+
+## Task 6: Parental Settings
+
+To be figured out.
+
+## Task 7: Spotify
+
+Det kunne være smart hvis jeg kunne linke til spotify.

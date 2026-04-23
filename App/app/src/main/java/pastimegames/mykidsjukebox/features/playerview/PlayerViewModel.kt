@@ -1,12 +1,12 @@
 package pastimegames.mykidsjukebox.features.playerview
 
 import android.app.Application
-import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Job
@@ -19,16 +19,21 @@ import kotlinx.coroutines.launch
 
 class PlayerViewModel(
     application: Application,
-    title: String,
-    artworkUri: Uri?,
-    audioUri: Uri
+    folderAudioItems: List<PlayerQueueItem>,
+    startIndex: Int,
+    initialWindowSize: Int
 ) : AndroidViewModel(application) {
 
     private val exoPlayer = ExoPlayer.Builder(application).build()
+    private val orderedFolderItems = folderAudioItems
+    private val safeStartIndex = startIndex.coerceIn(0, (orderedFolderItems.size - 1).coerceAtLeast(0))
+    private val queueWindowSize = initialWindowSize.coerceAtLeast(2)
+    private var nextFolderIndexToEnqueue = safeStartIndex
     private val _state = MutableStateFlow(
         PlayerState(
-            title = title,
-            artworkUri = artworkUri,
+            title = orderedFolderItems.getOrNull(safeStartIndex)?.title ?: "Unknown Audio",
+            artworkUri = orderedFolderItems.getOrNull(safeStartIndex)?.artworkUri,
+            upcomingItems = orderedFolderItems.drop(safeStartIndex + 1).take(4),
             isPlaying = false,
             durationMs = 0L,
             positionMs = 0L
@@ -44,24 +49,39 @@ class PlayerViewModel(
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
+            ensureQueueDepth()
             refreshProgress()
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            trimConsumedQueueItems()
+            ensureQueueDepth()
+            refreshCurrentTrackMetadata()
             refreshProgress()
         }
     }
 
     init {
-        exoPlayer.addListener(playerListener)
-        exoPlayer.setMediaItem(MediaItem.fromUri(audioUri))
-        exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
+        if (orderedFolderItems.isNotEmpty()) {
+            exoPlayer.addListener(playerListener)
+            val initialMediaItems = mutableListOf<MediaItem>()
+            while (
+                initialMediaItems.size < queueWindowSize &&
+                nextFolderIndexToEnqueue < orderedFolderItems.size
+            ) {
+                initialMediaItems += buildMediaItem(nextFolderIndexToEnqueue)
+                nextFolderIndexToEnqueue += 1
+            }
+            exoPlayer.setMediaItems(initialMediaItems, 0, 0L)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+            refreshCurrentTrackMetadata()
 
-        progressJob = viewModelScope.launch {
-            while (true) {
-                refreshProgress()
-                delay(250)
+            progressJob = viewModelScope.launch {
+                while (true) {
+                    refreshProgress()
+                    delay(250)
+                }
             }
         }
     }
@@ -95,6 +115,59 @@ class PlayerViewModel(
         }
     }
 
+    private fun buildMediaItem(folderIndex: Int): MediaItem {
+        val item = orderedFolderItems[folderIndex]
+        val metadata = MediaMetadata.Builder()
+            .setTitle(item.title)
+            .setArtworkUri(item.artworkUri)
+            .build()
+
+        return MediaItem.Builder()
+            .setMediaId(folderIndex.toString())
+            .setUri(item.audioUri)
+            .setMediaMetadata(metadata)
+            .build()
+    }
+
+    private fun trimConsumedQueueItems() {
+        val currentIndex = exoPlayer.currentMediaItemIndex
+        if (currentIndex <= 0) {
+            return
+        }
+        exoPlayer.removeMediaItems(0, currentIndex)
+    }
+
+    private fun ensureQueueDepth() {
+        if (orderedFolderItems.isEmpty()) {
+            return
+        }
+
+        val desiredUpcomingDepth = queueWindowSize - 1
+        var remainingUpcoming = exoPlayer.mediaItemCount - (exoPlayer.currentMediaItemIndex + 1)
+        while (
+            remainingUpcoming < desiredUpcomingDepth &&
+            nextFolderIndexToEnqueue < orderedFolderItems.size
+        ) {
+            exoPlayer.addMediaItem(buildMediaItem(nextFolderIndexToEnqueue))
+            nextFolderIndexToEnqueue += 1
+            remainingUpcoming += 1
+        }
+    }
+
+    private fun refreshCurrentTrackMetadata() {
+        val mediaId = exoPlayer.currentMediaItem?.mediaId
+        val folderIndex = mediaId?.toIntOrNull() ?: safeStartIndex
+        val currentItem = orderedFolderItems.getOrNull(folderIndex) ?: return
+
+        _state.update { current ->
+            current.copy(
+                title = currentItem.title,
+                artworkUri = currentItem.artworkUri,
+                upcomingItems = orderedFolderItems.drop(folderIndex + 1).take(4)
+            )
+        }
+    }
+
     override fun onCleared() {
         progressJob?.cancel()
         exoPlayer.removeListener(playerListener)
@@ -105,18 +178,18 @@ class PlayerViewModel(
     companion object {
         fun factory(
             application: Application,
-            title: String,
-            artworkUri: Uri?,
-            audioUri: Uri
+            folderAudioItems: List<PlayerQueueItem>,
+            startIndex: Int,
+            initialWindowSize: Int
         ): ViewModelProvider.Factory {
             return object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     return PlayerViewModel(
                         application = application,
-                        title = title,
-                        artworkUri = artworkUri,
-                        audioUri = audioUri
+                        folderAudioItems = folderAudioItems,
+                        startIndex = startIndex,
+                        initialWindowSize = initialWindowSize
                     ) as T
                 }
             }

@@ -5,6 +5,7 @@ import android.net.Uri
 data class PlayerState(
     val title: String,
     val artworkUri: Uri?,
+    val upcomingItems: List<PlayerQueueItem>,
     val isPlaying: Boolean,
     val durationMs: Long,
     val positionMs: Long

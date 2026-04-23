@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,8 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Pause
@@ -37,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -51,12 +54,12 @@ fun PlayerScreen(
 ) {
     val application = LocalContext.current.applicationContext as Application
     val viewModel: PlayerViewModel = viewModel(
-        key = "player-${route.audioUri}-${route.sessionId}",
+        key = "player-${route.startIndex}-${route.sessionId}",
         factory = PlayerViewModel.factory(
             application = application,
-            title = route.title,
-            artworkUri = route.artworkUri,
-            audioUri = route.audioUri
+            folderAudioItems = route.folderAudioItems,
+            startIndex = route.startIndex,
+            initialWindowSize = route.initialWindowSize
         )
     )
     val state by viewModel.state.collectAsState()
@@ -98,9 +101,12 @@ private fun PlayerContent(
         PlayerArtwork(
             artworkUri = state.artworkUri,
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+                .fillMaxWidth(0.88f)
+                .align(Alignment.CenterHorizontally)
+                .weight(0.85f, fill = true)
         )
+
+        UpcomingQueueRow(items = state.upcomingItems)
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -145,6 +151,70 @@ private fun PlayerContent(
                 modifier = Modifier.size(200.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun UpcomingQueueRow(
+    items: List<PlayerQueueItem>,
+    modifier: Modifier = Modifier
+) {
+    if (items.isEmpty()) {
+        return
+    }
+
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val queueItemSize = maxWidth * 0.20f
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 12.dp,
+                alignment = Alignment.CenterHorizontally
+            )
+        ) {
+            items(items) { queueItem ->
+                QueueArtworkThumbnail(
+                    item = queueItem,
+                    itemSize = queueItemSize
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QueueArtworkThumbnail(
+    item: PlayerQueueItem,
+    itemSize: Dp,
+    modifier: Modifier = Modifier
+) {
+    if (item.artworkUri != null) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(item.artworkUri)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Upcoming audio artwork for ${item.title}",
+            contentScale = ContentScale.Crop,
+            modifier = modifier
+                .size(itemSize)
+                .clip(RoundedCornerShape(14.dp))
+        )
+        return
+    }
+
+    Box(
+        modifier = modifier
+            .size(itemSize)
+            .background(color = Color(0xFFFBBF24), shape = RoundedCornerShape(14.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Audiotrack,
+            contentDescription = "Default upcoming artwork",
+            tint = Color(0xFFB91C1C),
+            modifier = Modifier.size(42.dp)
+        )
     }
 }
 
