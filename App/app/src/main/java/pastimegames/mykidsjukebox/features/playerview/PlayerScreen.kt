@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -49,6 +50,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import pastimegames.mykidsjukebox.R
 import pastimegames.mykidsjukebox.features.shared.components.LargeCloseButton
+import pastimegames.mykidsjukebox.features.shared.components.rememberUiFeedback
 
 @Composable
 fun PlayerScreen(
@@ -78,6 +80,7 @@ fun PlayerScreen(
         state = state,
         onBack = handleBack,
         onPlayPauseClick = viewModel::togglePlayPause,
+        onQueueItemClick = viewModel::playQueueItem,
         modifier = modifier
     )
 }
@@ -87,8 +90,10 @@ private fun PlayerContent(
     state: PlayerState,
     onBack: () -> Unit,
     onPlayPauseClick: () -> Unit,
+    onQueueItemClick: (PlayerQueueItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val uiFeedback = rememberUiFeedback()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -111,7 +116,10 @@ private fun PlayerContent(
                 .weight(0.85f, fill = true)
         )
 
-        UpcomingQueueRow(items = state.upcomingItems)
+        UpcomingQueueRow(
+            items = state.upcomingItems,
+            onQueueItemClick = onQueueItemClick
+        )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -147,7 +155,10 @@ private fun PlayerContent(
             label = "play-button-scale"
         )
         Button(
-            onClick = onPlayPauseClick,
+            onClick = {
+                uiFeedback.performPrimaryActionFeedback()
+                onPlayPauseClick()
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(210.dp)
@@ -174,6 +185,7 @@ private fun PlayerContent(
 @Composable
 private fun UpcomingQueueRow(
     items: List<PlayerQueueItem>,
+    onQueueItemClick: (PlayerQueueItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (items.isEmpty()) {
@@ -201,7 +213,8 @@ private fun UpcomingQueueRow(
                 items(items) { queueItem ->
                     QueueArtworkThumbnail(
                         item = queueItem,
-                        itemSize = queueItemSize
+                        itemSize = queueItemSize,
+                        onClick = { onQueueItemClick(queueItem) }
                     )
                 }
             }
@@ -213,6 +226,7 @@ private fun UpcomingQueueRow(
 private fun QueueArtworkThumbnail(
     item: PlayerQueueItem,
     itemSize: Dp,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (item.artworkUri != null) {
@@ -226,6 +240,7 @@ private fun QueueArtworkThumbnail(
             modifier = modifier
                 .size(itemSize)
                 .clip(RoundedCornerShape(14.dp))
+                .clickable(onClick = onClick)
         )
         return
     }
@@ -236,7 +251,8 @@ private fun QueueArtworkThumbnail(
             .background(
                 color = MaterialTheme.colorScheme.tertiary,
                 shape = RoundedCornerShape(14.dp)
-            ),
+            )
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Icon(

@@ -36,6 +36,7 @@ import pastimegames.mykidsjukebox.features.libraryoverview.components.FolderGrid
 import pastimegames.mykidsjukebox.features.libraryoverview.components.LibraryHeader
 import pastimegames.mykidsjukebox.features.libraryoverview.components.NavigationButtons
 import pastimegames.mykidsjukebox.features.libraryoverview.components.SelectFolderState
+import pastimegames.mykidsjukebox.features.shared.components.rememberUiFeedback
 import pastimegames.mykidsjukebox.R
 import pastimegames.mykidsjukebox.storage.toDocumentFolder
 
@@ -49,6 +50,7 @@ fun LibraryOverviewScreen(
     val scanner = remember { LibraryScanner() }
     val folderStore = remember { RootFolderStore(context) }
     val scope = rememberCoroutineScope()
+    val uiFeedback = rememberUiFeedback()
     val rootUriString by folderStore.rootUriFlow.collectAsState(initial = null)
     val artworkCacheByFolder = remember { mutableStateMapOf<String, MutableMap<String, Uri?>>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -71,8 +73,10 @@ fun LibraryOverviewScreen(
             folderStackUris.clear()
             folderStackUris.add(uri.toString())
             errorMessage = null
+            uiFeedback.performSuccessFeedback()
         } catch (_: SecurityException) {
             errorMessage = context.getString(R.string.select_folder_permission_error)
+            uiFeedback.performErrorFeedback()
         }
     }
 

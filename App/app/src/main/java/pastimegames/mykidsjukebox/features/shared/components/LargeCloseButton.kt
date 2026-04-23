@@ -21,8 +21,12 @@ fun LargeCloseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val uiFeedback = rememberUiFeedback()
     Button(
-        onClick = onClick,
+        onClick = {
+            uiFeedback.performPrimaryActionFeedback()
+            onClick()
+        },
         modifier = modifier
             .fillMaxWidth()
             .height(100.dp),

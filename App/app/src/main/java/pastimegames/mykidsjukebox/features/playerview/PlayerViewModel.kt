@@ -11,6 +11,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionToken
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Job
@@ -104,6 +105,14 @@ class PlayerViewModel(
         refreshProgress()
     }
 
+    fun playQueueItem(item: PlayerQueueItem) {
+        val selectedIndex = orderedFolderItems.indexOfFirst { it.audioUri == item.audioUri }
+        if (selectedIndex < 0) {
+            return
+        }
+        sendQueueCommand(startIndex = selectedIndex)
+    }
+
     private fun refreshProgress() {
         val controller = mediaController ?: return
         val duration = controller.duration.takeIf { it > 0L } ?: 0L
@@ -121,14 +130,26 @@ class PlayerViewModel(
             return
         }
         hasSentInitialQueue = true
+        sendQueueCommand(startIndex = safeStartIndex)
+    }
+
+    private fun sendQueueCommand(startIndex: Int) {
         val controller = mediaController ?: return
         val payload = QueueCommandPayload(
             items = orderedFolderItems,
-            startIndex = safeStartIndex,
+            startIndex = startIndex,
             queueWindowSize = queueWindowSize
         )
         val command = SessionCommand(COMMAND_SET_QUEUE, Bundle.EMPTY)
-        controller.sendCustomCommand(command, payload.toBundle())
+        val commandFuture = controller.sendCustomCommand(command, payload.toBundle())
+        commandFuture.addListener({
+            val result = commandFuture.get()
+            if (result.resultCode == SessionResult.RESULT_SUCCESS) {
+                controller.play()
+                refreshCurrentTrackMetadata()
+                refreshProgress()
+            }
+        }, ContextCompat.getMainExecutor(getApplication()))
     }
 
     private fun refreshCurrentTrackMetadata() {
