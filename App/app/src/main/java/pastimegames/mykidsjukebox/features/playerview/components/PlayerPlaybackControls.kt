@@ -34,6 +34,7 @@ internal fun PlayerPlaybackControls(
     positionMs: Long,
     remainingMs: Long,
     progress: Float,
+    layoutTokens: PlayerLayoutTokens,
     onPlayPauseClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -44,26 +45,26 @@ internal fun PlayerPlaybackControls(
         Text(
             text = formatMillis(positionMs),
             textAlign = TextAlign.End,
-            modifier = Modifier.width(56.dp)
+            modifier = Modifier.width(layoutTokens.timelineTextWidth)
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(layoutTokens.timelineItemSpacing))
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier
                 .weight(1f)
-                .height(10.dp),
+                .height(layoutTokens.timelineHeight),
             color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.width(layoutTokens.timelineItemSpacing))
         Text(
             text = "-${formatMillis(remainingMs)}",
             textAlign = TextAlign.Start,
-            modifier = Modifier.width(56.dp)
+            modifier = Modifier.width(layoutTokens.timelineTextWidth)
         )
     }
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(layoutTokens.controlsSpacing))
 
     val playButtonScale by animateFloatAsState(
         targetValue = if (isPlaying) 0.98f else 1f,
@@ -75,7 +76,7 @@ internal fun PlayerPlaybackControls(
         onClick = onPlayPauseClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(210.dp)
+            .height(layoutTokens.playButtonHeight)
             .scale(playButtonScale),
         shape = RoundedCornerShape(percent = 50),
         colors = ButtonDefaults.buttonColors(
@@ -90,7 +91,7 @@ internal fun PlayerPlaybackControls(
             } else {
                 stringResource(R.string.play)
             },
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier.size(layoutTokens.playIconSize)
         )
     }
 }

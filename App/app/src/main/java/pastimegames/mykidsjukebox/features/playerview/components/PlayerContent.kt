@@ -1,14 +1,16 @@
 package pastimegames.mykidsjukebox.features.playerview.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import pastimegames.mykidsjukebox.features.playerview.PlayerQueueItem
 import pastimegames.mykidsjukebox.features.playerview.PlayerState
 import pastimegames.mykidsjukebox.features.shared.components.LargeCloseButton
@@ -24,38 +26,63 @@ internal fun PlayerContent(
 ) {
     val uiFeedback = rememberUiFeedback()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+    BoxWithConstraints(
+        modifier = modifier.fillMaxSize()
     ) {
-        LargeCloseButton(onClick = onBack)
+        val layoutTokens = remember(maxWidth, maxHeight) {
+            buildPlayerLayoutTokens(
+                maxWidth = maxWidth,
+                maxHeight = maxHeight
+            )
+        }
 
-        PlayerTitle(title = state.title)
-
-        PlayerArtwork(
-            artworkUri = state.artworkUri,
+        Column(
             modifier = Modifier
-                .fillMaxWidth(0.88f)
-                .align(Alignment.CenterHorizontally)
-                .weight(0.85f, fill = true)
-        )
+                .fillMaxSize()
+                .padding(layoutTokens.contentPadding),
+            verticalArrangement = Arrangement.spacedBy(layoutTokens.sectionSpacing)
+        ) {
+            LargeCloseButton(
+                onClick = onBack,
+                height = layoutTokens.closeButtonHeight,
+                iconSize = layoutTokens.closeIconSize,
+                cornerRadius = layoutTokens.closeCornerRadius
+            )
 
-        UpcomingQueueRow(
-            items = state.upcomingItems,
-            onQueueItemClick = onQueueItemClick
-        )
+            PlayerTitle(title = state.title)
 
-        PlayerPlaybackControls(
-            isPlaying = state.isPlaying,
-            positionMs = state.positionMs,
-            remainingMs = state.remainingMs,
-            progress = state.progress,
-            onPlayPauseClick = {
-                uiFeedback.performPrimaryActionFeedback()
-                onPlayPauseClick()
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = true),
+                contentAlignment = Alignment.Center
+            ) {
+                val sizeFromHeight = maxHeight * layoutTokens.artworkHeightFraction
+                val artworkSize = minOf(sizeFromHeight, maxWidth * layoutTokens.artworkWidthFraction)
+
+                PlayerArtwork(
+                    artworkUri = state.artworkUri,
+                    modifier = Modifier.size(artworkSize)
+                )
             }
-        )
+
+            UpcomingQueueRow(
+                items = state.upcomingItems,
+                onQueueItemClick = onQueueItemClick,
+                layoutTokens = layoutTokens
+            )
+
+            PlayerPlaybackControls(
+                isPlaying = state.isPlaying,
+                positionMs = state.positionMs,
+                remainingMs = state.remainingMs,
+                progress = state.progress,
+                layoutTokens = layoutTokens,
+                onPlayPauseClick = {
+                    uiFeedback.performPrimaryActionFeedback()
+                    onPlayPauseClick()
+                }
+            )
+        }
     }
 }

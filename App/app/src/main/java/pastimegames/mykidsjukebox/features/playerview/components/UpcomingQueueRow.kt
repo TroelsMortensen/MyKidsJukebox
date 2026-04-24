@@ -34,6 +34,7 @@ import pastimegames.mykidsjukebox.features.playerview.PlayerQueueItem
 internal fun UpcomingQueueRow(
     items: List<PlayerQueueItem>,
     onQueueItemClick: (PlayerQueueItem) -> Unit,
+    layoutTokens: PlayerLayoutTokens,
     modifier: Modifier = Modifier
 ) {
     if (items.isEmpty()) {
@@ -42,7 +43,7 @@ internal fun UpcomingQueueRow(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(layoutTokens.queueSectionSpacing)
     ) {
         Text(
             text = stringResource(R.string.up_next),
@@ -50,22 +51,24 @@ internal fun UpcomingQueueRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val baseQueueItemSize = maxWidth * 0.20f
-            val queueShrinkStep = 6.dp
+            val baseQueueItemSize = layoutTokens.queueItemBaseSize
 
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(
-                    space = 12.dp,
+                    space = layoutTokens.queueItemSpacing,
                     alignment = Alignment.CenterHorizontally
                 )
             ) {
                 itemsIndexed(items) { index, queueItem ->
-                    val queueItemSize = baseQueueItemSize - (queueShrinkStep * index)
+                    val queueItemSize = (baseQueueItemSize - (layoutTokens.queueItemShrinkStep * index))
+                        .coerceAtLeast(layoutTokens.queueItemMinSize)
                     QueueArtworkThumbnail(
                         item = queueItem,
                         itemSize = queueItemSize,
+                        cornerRadius = layoutTokens.queueCornerRadius,
+                        iconSize = layoutTokens.queueIconSize,
                         onClick = { onQueueItemClick(queueItem) }
                     )
                 }
@@ -78,6 +81,8 @@ internal fun UpcomingQueueRow(
 private fun QueueArtworkThumbnail(
     item: PlayerQueueItem,
     itemSize: Dp,
+    cornerRadius: Dp,
+    iconSize: Dp,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -91,7 +96,7 @@ private fun QueueArtworkThumbnail(
             contentScale = ContentScale.Crop,
             modifier = modifier
                 .size(itemSize)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(cornerRadius))
                 .clickable(onClick = onClick)
         )
         return
@@ -102,7 +107,7 @@ private fun QueueArtworkThumbnail(
             .size(itemSize)
             .background(
                 color = MaterialTheme.colorScheme.tertiary,
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedCornerShape(cornerRadius)
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -111,7 +116,7 @@ private fun QueueArtworkThumbnail(
             imageVector = Icons.Filled.Audiotrack,
             contentDescription = stringResource(R.string.default_upcoming_artwork_description),
             tint = MaterialTheme.colorScheme.error,
-            modifier = Modifier.size(42.dp)
+            modifier = Modifier.size(iconSize)
         )
     }
 }

@@ -13,12 +13,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pastimegames.mykidsjukebox.R
 
 @Composable
 fun LargeCloseButton(
     onClick: () -> Unit,
+    height: Dp = 100.dp,
+    iconSize: Dp = 70.dp,
+    cornerRadius: Dp = 50.dp,
     modifier: Modifier = Modifier
 ) {
     val uiFeedback = rememberUiFeedback()
@@ -29,8 +33,8 @@ fun LargeCloseButton(
         },
         modifier = modifier
             .fillMaxWidth()
-            .height(100.dp),
-        shape = RoundedCornerShape(50.dp),
+            .height(height),
+        shape = RoundedCornerShape(cornerRadius),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error,
             contentColor = MaterialTheme.colorScheme.onError
@@ -39,7 +43,7 @@ fun LargeCloseButton(
         Icon(
             imageVector = Icons.Filled.Close,
             contentDescription = stringResource(R.string.close),
-            modifier = Modifier.size(70.dp)
+            modifier = Modifier.size(iconSize)
         )
     }
 }
