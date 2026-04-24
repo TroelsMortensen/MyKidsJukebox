@@ -33,9 +33,9 @@ Establish persistent access to the Android file system and recursively map the l
 
 - **Sub-task 3.3:** Background playback support (so the screen can be off).
 
-## Task 4: Queue
+## Task 4: UI
 
-- Refactor? PlayerScreen has too many nested composables...? Make a component folder like libraryoverview.
+- The right side time-left needs more space. 10:04 made a line break.
 
 ## Task 5: Persistence & Logic
 *Goal: Make it a reliable tool.*
