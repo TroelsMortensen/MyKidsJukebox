@@ -2,6 +2,7 @@ package pastimegames.mykidsjukebox.features.libraryoverview.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -44,63 +46,71 @@ fun FolderGridCard(
 
     val shouldShowPlayButton = item.kind == LibraryItemKind.Audio
     val cardHeight = if (item.kind == LibraryItemKind.Audio) 390.dp else 320.dp
+    val maxCardWidth = 320.dp
 
-    Card(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(cardHeight)
-            .clip(RoundedCornerShape(36.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(36.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .widthIn(max = maxCardWidth)
+                .height(cardHeight)
+                .clip(RoundedCornerShape(36.dp))
+                .clickable(onClick = onClick),
+            shape = RoundedCornerShape(36.dp),
+            colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Text(
-                text = item.name,
-                textAlign = TextAlign.Center,
-                color = colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            BoxWithConstraints(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = true),
-                contentAlignment = Alignment.TopCenter
+                    .fillMaxSize()
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                val artworkSize = minOf(maxWidth, maxHeight)
-                FolderArtwork(
-                    artworkUri = item.artworkUri,
-                    artworkIsLoading = item.artworkIsLoading,
-                    itemKind = item.kind,
-                    modifier = Modifier.size(artworkSize)
+                Text(
+                    text = item.name,
+                    textAlign = TextAlign.Center,
+                    color = colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-            }
-            if (shouldShowPlayButton) {
-                Button(
-                    onClick = onPlayClick,
+                BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(72.dp),
-                    shape = RoundedCornerShape(36.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.secondary,
-                        contentColor = colorScheme.onSecondary
-                    )
+                        .weight(1f, fill = true),
+                    contentAlignment = Alignment.TopCenter
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(58.dp)
+                    val artworkSize = minOf(maxWidth, maxHeight)
+                    FolderArtwork(
+                        artworkUri = item.artworkUri,
+                        artworkIsLoading = item.artworkIsLoading,
+                        itemKind = item.kind,
+                        modifier = Modifier.size(artworkSize)
                     )
+                }
+                if (shouldShowPlayButton) {
+                    Button(
+                        onClick = onPlayClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(72.dp),
+                        shape = RoundedCornerShape(36.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.secondary,
+                            contentColor = colorScheme.onSecondary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(58.dp)
+                        )
+                    }
                 }
             }
         }
