@@ -2,7 +2,10 @@ package pastimegames.mykidsjukebox.features.playerview
 
 import android.app.Application
 import android.content.ComponentName
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -20,7 +23,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PlayerViewModel(
     application: Application,
@@ -34,8 +39,10 @@ class PlayerViewModel(
     private val _state = MutableStateFlow(
         PlayerState(
             title = orderedFolderItems.getOrNull(safeStartIndex)?.title ?: "Unknown Audio",
-            artworkUri = orderedFolderItems.getOrNull(safeStartIndex)?.artworkUri,
+            currentAudioUri = orderedFolderItems.getOrNull(safeStartIndex)?.audioUri,
+            artworkUri = null,
             upcomingItems = orderedFolderItems.drop(safeStartIndex + 1).take(4),
+            artworkByAudioUri = emptyMap(),
             isPlaying = false,
             durationMs = 0L,
             positionMs = 0L
@@ -46,6 +53,7 @@ class PlayerViewModel(
     private var progressJob: Job? = null
     private var mediaController: MediaController? = null
     private var hasSentInitialQueue = false
+    private val artworkByAudioUriCache = mutableMapOf<String, Uri?>()
     private val sessionToken = SessionToken(
         application,
         ComponentName(application, PlaybackService::class.java)
@@ -156,14 +164,89 @@ class PlayerViewModel(
         val mediaId = mediaController?.currentMediaItem?.mediaId
         val folderIndex = mediaId?.toIntOrNull() ?: safeStartIndex
         val currentItem = orderedFolderItems.getOrNull(folderIndex) ?: return
+        val upcomingItems = orderedFolderItems.drop(folderIndex + 1).take(4)
 
         _state.update { current ->
             current.copy(
                 title = currentItem.title,
-                artworkUri = currentItem.artworkUri,
-                upcomingItems = orderedFolderItems.drop(folderIndex + 1).take(4)
+                currentAudioUri = currentItem.audioUri,
+                artworkUri = artworkByAudioUriCache[currentItem.audioUri.toString()],
+                upcomingItems = upcomingItems,
+                artworkByAudioUri = artworkByAudioUriCache.toMap()
             )
         }
+        resolveAndCacheArtwork(currentItem.audioUri)
+        upcomingItems.forEach { resolveAndCacheArtwork(it.audioUri) }
+    }
+
+    private fun resolveAndCacheArtwork(audioUri: Uri) {
+        val audioKey = audioUri.toString()
+        if (artworkByAudioUriCache.containsKey(audioKey)) {
+            return
+        }
+        viewModelScope.launch {
+            val resolvedArtworkUri = withContext(Dispatchers.IO) {
+                resolveArtworkFromAudioUri(audioUri)
+            }
+            artworkByAudioUriCache[audioKey] = resolvedArtworkUri
+            _state.update { current ->
+                if (current.currentAudioUri == audioUri) {
+                    current.copy(
+                        artworkUri = resolvedArtworkUri,
+                        artworkByAudioUri = artworkByAudioUriCache.toMap()
+                    )
+                } else {
+                    current.copy(artworkByAudioUri = artworkByAudioUriCache.toMap())
+                }
+            }
+        }
+    }
+
+    private fun resolveArtworkFromAudioUri(audioUri: Uri): Uri? {
+        val app = getApplication<Application>()
+        if (!DocumentsContract.isDocumentUri(app, audioUri)) {
+            return null
+        }
+
+        val documentId = try {
+            DocumentsContract.getDocumentId(audioUri)
+        } catch (_: IllegalArgumentException) {
+            return null
+        }
+        val parentDocumentId = documentId.substringBeforeLast('/', missingDelimiterValue = "")
+        if (parentDocumentId.isBlank()) {
+            return null
+        }
+
+        val parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(audioUri, parentDocumentId)
+        val parentFolder = DocumentFile.fromTreeUri(app, parentDocumentUri)
+            ?: DocumentFile.fromSingleUri(app, parentDocumentUri)
+            ?: return null
+        val siblings = parentFolder.listFiles()
+        val audioName = siblings.firstOrNull { it.uri == audioUri }?.name ?: return null
+        val baseName = audioName.substringBeforeLast('.', missingDelimiterValue = audioName)
+        val artworkCandidates = listOf(
+            "$baseName.jpg",
+            "$baseName.jpeg",
+            "$baseName.png",
+            "$baseName.webp",
+            "cover.jpg",
+            "cover.jpeg",
+            "cover.png",
+            "artwork.jpg",
+            "artwork.jpeg",
+            "artwork.png"
+        )
+        val siblingFiles = siblings.filter { it.isFile }
+        for (candidate in artworkCandidates) {
+            val match = siblingFiles.firstOrNull { sibling ->
+                sibling.name.equals(candidate, ignoreCase = true)
+            }
+            if (match != null) {
+                return match.uri
+            }
+        }
+        return null
     }
 
     override fun onCleared() {

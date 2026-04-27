@@ -4,6 +4,5 @@ import android.net.Uri
 
 data class PlayerQueueItem(
     val title: String,
-    val audioUri: Uri,
-    val artworkUri: Uri?
+    val audioUri: Uri
 )

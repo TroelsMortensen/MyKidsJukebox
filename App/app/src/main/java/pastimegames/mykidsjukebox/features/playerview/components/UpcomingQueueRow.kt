@@ -1,5 +1,6 @@
 package pastimegames.mykidsjukebox.features.playerview.components
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,7 @@ import pastimegames.mykidsjukebox.features.playerview.PlayerQueueItem
 @Composable
 internal fun UpcomingQueueRow(
     items: List<PlayerQueueItem>,
+    artworkByAudioUri: Map<String, Uri?>,
     onQueueItemClick: (PlayerQueueItem) -> Unit,
     layoutTokens: PlayerLayoutTokens,
     modifier: Modifier = Modifier
@@ -66,6 +68,7 @@ internal fun UpcomingQueueRow(
                         .coerceAtLeast(layoutTokens.queueItemMinSize)
                     QueueArtworkThumbnail(
                         item = queueItem,
+                        artworkUri = artworkByAudioUri[queueItem.audioUri.toString()],
                         itemSize = queueItemSize,
                         cornerRadius = layoutTokens.queueCornerRadius,
                         iconSize = layoutTokens.queueIconSize,
@@ -80,16 +83,17 @@ internal fun UpcomingQueueRow(
 @Composable
 private fun QueueArtworkThumbnail(
     item: PlayerQueueItem,
+    artworkUri: Uri?,
     itemSize: Dp,
     cornerRadius: Dp,
     iconSize: Dp,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (item.artworkUri != null) {
+    if (artworkUri != null) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(item.artworkUri)
+                .data(artworkUri)
                 .crossfade(true)
                 .build(),
             contentDescription = stringResource(R.string.upcoming_artwork_description, item.title),

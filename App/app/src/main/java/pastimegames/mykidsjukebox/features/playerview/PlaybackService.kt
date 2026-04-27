@@ -128,7 +128,6 @@ class PlaybackService : MediaSessionService() {
         val item = orderedFolderItems[folderIndex]
         val metadata = MediaMetadata.Builder()
             .setTitle(item.title)
-            .setArtworkUri(item.artworkUri)
             .build()
         return MediaItem.Builder()
             .setMediaId(folderIndex.toString())

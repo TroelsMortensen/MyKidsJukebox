@@ -1,5 +1,6 @@
 package pastimegames.mykidsjukebox.features.libraryoverview.components
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,22 +36,56 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
 import pastimegames.mykidsjukebox.data.library.LibraryItemKind
+import pastimegames.mykidsjukebox.data.library.LibraryScanner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun FolderGridCard(
     item: FolderGridItem,
+    scanner: LibraryScanner,
+    quickScanResult: LibraryScanner.QuickScanResult?,
     onClick: () -> Unit,
     onPlayClick: () -> Unit
 ) {
+    var artworkUri by remember(item.targetUri) { mutableStateOf<Uri?>(item.artworkUri) }
+    var artworkIsLoading by remember(item.targetUri) { mutableStateOf(item.artworkIsLoading) }
+    var childFolderCount by remember(item.targetUri) { mutableStateOf(item.childFolderCount) }
+    var audioFileCount by remember(item.targetUri) { mutableStateOf(item.audioFileCount) }
+
+    LaunchedEffect(item.targetUri, quickScanResult) {
+        val quickScan = quickScanResult ?: run {
+            artworkIsLoading = false
+            return@LaunchedEffect
+        }
+        val resolvedArtworkUri = withContext(Dispatchers.IO) {
+            scanner.resolveArtworkForItem(item, quickScan)
+        }
+        val resolvedCounts = withContext(Dispatchers.IO) {
+            scanner.resolveFolderCounts(item, quickScan)
+        }
+        artworkUri = resolvedArtworkUri ?: artworkUri
+        artworkIsLoading = false
+        childFolderCount = resolvedCounts?.childFolderCount
+        audioFileCount = resolvedCounts?.audioFileCount
+    }
+
+    val resolvedItem = item.copy(
+        artworkUri = artworkUri,
+        artworkIsLoading = artworkIsLoading,
+        childFolderCount = childFolderCount,
+        audioFileCount = audioFileCount
+    )
+
     val colorScheme = MaterialTheme.colorScheme
-    val cardBackgroundColor = if (item.kind == LibraryItemKind.Audio) {
+    val cardBackgroundColor = if (resolvedItem.kind == LibraryItemKind.Audio) {
         colorScheme.surfaceVariant
     } else {
         colorScheme.surface
     }
 
-    val shouldShowPlayButton = item.kind == LibraryItemKind.Audio
-    val cardHeight = if (item.kind == LibraryItemKind.Audio) 390.dp else 320.dp
+    val shouldShowPlayButton = resolvedItem.kind == LibraryItemKind.Audio
+    val cardHeight = if (resolvedItem.kind == LibraryItemKind.Audio) 390.dp else 320.dp
     val maxCardWidth = 320.dp
 
     Box(
@@ -72,7 +112,7 @@ fun FolderGridCard(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = item.name,
+                    text = resolvedItem.name,
                     textAlign = TextAlign.Center,
                     color = colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.titleMedium,
@@ -87,9 +127,9 @@ fun FolderGridCard(
                 ) {
                     val artworkSize = minOf(maxWidth, maxHeight)
                     FolderArtwork(
-                        artworkUri = item.artworkUri,
-                        artworkIsLoading = item.artworkIsLoading,
-                        itemKind = item.kind,
+                        artworkUri = resolvedItem.artworkUri,
+                        artworkIsLoading = resolvedItem.artworkIsLoading,
+                        itemKind = resolvedItem.kind,
                         modifier = Modifier.size(artworkSize)
                     )
                 }

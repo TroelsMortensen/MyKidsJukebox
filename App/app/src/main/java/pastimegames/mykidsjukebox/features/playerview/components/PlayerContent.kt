@@ -68,6 +68,7 @@ internal fun PlayerContent(
 
             UpcomingQueueRow(
                 items = state.upcomingItems,
+                artworkByAudioUri = state.artworkByAudioUri,
                 onQueueItemClick = onQueueItemClick,
                 layoutTokens = layoutTokens
             )

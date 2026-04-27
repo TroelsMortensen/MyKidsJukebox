@@ -4,8 +4,10 @@ import android.net.Uri
 
 data class PlayerState(
     val title: String,
+    val currentAudioUri: Uri?,
     val artworkUri: Uri?,
     val upcomingItems: List<PlayerQueueItem>,
+    val artworkByAudioUri: Map<String, Uri?>,
     val isPlaying: Boolean,
     val durationMs: Long,
     val positionMs: Long

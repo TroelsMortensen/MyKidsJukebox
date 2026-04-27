@@ -5,7 +5,6 @@ import android.os.Bundle
 
 private const val KEY_TITLES = "titles"
 private const val KEY_AUDIO_URIS = "audio_uris"
-private const val KEY_ARTWORK_URIS = "artwork_uris"
 private const val KEY_START_INDEX = "start_index"
 private const val KEY_WINDOW_SIZE = "window_size"
 
@@ -21,7 +20,6 @@ fun QueueCommandPayload.toBundle(): Bundle {
     return Bundle().apply {
         putStringArrayList(KEY_TITLES, ArrayList(items.map { it.title }))
         putStringArrayList(KEY_AUDIO_URIS, ArrayList(items.map { it.audioUri.toString() }))
-        putStringArrayList(KEY_ARTWORK_URIS, ArrayList(items.map { it.artworkUri?.toString().orEmpty() }))
         putInt(KEY_START_INDEX, startIndex)
         putInt(KEY_WINDOW_SIZE, queueWindowSize)
     }
@@ -30,8 +28,7 @@ fun QueueCommandPayload.toBundle(): Bundle {
 fun Bundle.toQueueCommandPayloadOrNull(): QueueCommandPayload? {
     val titles = getStringArrayList(KEY_TITLES) ?: return null
     val audioUris = getStringArrayList(KEY_AUDIO_URIS) ?: return null
-    val artworkUris = getStringArrayList(KEY_ARTWORK_URIS) ?: return null
-    if (titles.size != audioUris.size || audioUris.size != artworkUris.size) {
+    if (titles.size != audioUris.size) {
         return null
     }
 
@@ -40,11 +37,9 @@ fun Bundle.toQueueCommandPayloadOrNull(): QueueCommandPayload? {
         if (uriString.isBlank()) {
             return@mapNotNull null
         }
-        val artworkUri = artworkUris[index].takeIf { it.isNotBlank() }?.let(Uri::parse)
         PlayerQueueItem(
             title = titles[index],
-            audioUri = Uri.parse(uriString),
-            artworkUri = artworkUri
+            audioUri = Uri.parse(uriString)
         )
     }
     if (items.isEmpty()) {

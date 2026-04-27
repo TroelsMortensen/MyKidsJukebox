@@ -13,7 +13,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
@@ -52,7 +50,6 @@ fun LibraryOverviewScreen(
     val scope = rememberCoroutineScope()
     val uiFeedback = rememberUiFeedback()
     val rootUriString by folderStore.rootUriFlow.collectAsState(initial = null)
-    val artworkCacheByFolder = remember { mutableStateMapOf<String, MutableMap<String, Uri?>>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val folderPicker = rememberLauncherForActivityResult(
@@ -105,49 +102,22 @@ fun LibraryOverviewScreen(
         }
     }
     var gridItems by remember(currentFolder?.uri?.toString()) { mutableStateOf(emptyList<FolderGridItem>()) }
+    var quickScanResult by remember(currentFolder?.uri?.toString()) { mutableStateOf<LibraryScanner.QuickScanResult?>(null) }
     var hasBrowsableContent by remember(currentFolder?.uri?.toString()) { mutableStateOf(false) }
     LaunchedEffect(currentFolder?.uri?.toString()) {
         val folder = currentFolder
         if (folder == null) {
             gridItems = emptyList()
+            quickScanResult = null
             hasBrowsableContent = false
             return@LaunchedEffect
         }
 
         val quickScan = withContext(Dispatchers.IO) { scanner.listFolderItemsQuick(folder) }
         gridItems = quickScan.items
+        quickScanResult = quickScan
         hasBrowsableContent = quickScan.items.isNotEmpty() ||
             withContext(Dispatchers.IO) { scanner.hasAnyBrowsableContent(folder) }
-
-        val folderKey = folder.uri.toString()
-        val folderArtworkCache = artworkCacheByFolder.getOrPut(folderKey) { mutableMapOf() }
-        coroutineScope {
-            quickScan.items.forEach { baseItem ->
-                launch(Dispatchers.IO) {
-                    val itemKey = baseItem.targetUri.toString()
-                    val cachedArtworkUri = folderArtworkCache[itemKey]
-                    val resolvedArtworkUri = cachedArtworkUri ?: scanner
-                        .resolveArtworkForItem(baseItem, quickScan)
-                        .also { resolved -> folderArtworkCache[itemKey] = resolved }
-                    val folderCounts = scanner.resolveFolderCounts(baseItem, quickScan)
-
-                    withContext(Dispatchers.Main) {
-                        gridItems = gridItems.map { item ->
-                            if (item.targetUri == baseItem.targetUri) {
-                                item.copy(
-                                    artworkUri = resolvedArtworkUri ?: item.artworkUri,
-                                    artworkIsLoading = false,
-                                    childFolderCount = folderCounts?.childFolderCount ?: item.childFolderCount,
-                                    audioFileCount = folderCounts?.audioFileCount ?: item.audioFileCount
-                                )
-                            } else {
-                                item
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     val uiState = LibraryOverviewState(
@@ -188,6 +158,8 @@ fun LibraryOverviewScreen(
     LibraryOverviewContent(
         state = uiState,
         actions = actions,
+        scanner = scanner,
+        quickScanResult = quickScanResult,
         modifier = modifier
     )
 }
@@ -196,6 +168,8 @@ fun LibraryOverviewScreen(
 private fun LibraryOverviewContent(
     state: LibraryOverviewState,
     actions: LibraryOverviewActions,
+    scanner: LibraryScanner,
+    quickScanResult: LibraryScanner.QuickScanResult?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -231,6 +205,8 @@ private fun LibraryOverviewContent(
         } else {
             FolderGrid(
                 items = state.gridItems,
+                scanner = scanner,
+                quickScanResult = quickScanResult,
                 onItemClick = actions.onItemClick,
                 onPlayClick = actions.onPlayClick
             )

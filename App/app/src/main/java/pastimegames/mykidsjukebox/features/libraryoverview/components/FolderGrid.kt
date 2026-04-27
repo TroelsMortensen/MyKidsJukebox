@@ -11,10 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
+import pastimegames.mykidsjukebox.data.library.LibraryScanner
 
 @Composable
 fun FolderGrid(
     items: List<FolderGridItem>,
+    scanner: LibraryScanner,
+    quickScanResult: LibraryScanner.QuickScanResult?,
     onItemClick: (FolderGridItem) -> Unit,
     onPlayClick: (FolderGridItem) -> Unit
 ) {
@@ -37,6 +40,8 @@ fun FolderGrid(
         ) { item ->
             FolderGridCard(
                 item = item,
+                scanner = scanner,
+                quickScanResult = quickScanResult,
                 onClick = { onItemClick(item) },
                 onPlayClick = { onPlayClick(item) }
             )

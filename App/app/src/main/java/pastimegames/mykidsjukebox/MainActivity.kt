@@ -57,8 +57,7 @@ class MainActivity : ComponentActivity() {
                                                 .map { item ->
                                                     PlayerQueueItem(
                                                         title = item.name,
-                                                        audioUri = item.targetUri,
-                                                        artworkUri = item.artworkUri
+                                                        audioUri = item.targetUri
                                                     )
                                                 },
                                             startIndex = startIndex,

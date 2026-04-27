@@ -9,6 +9,7 @@
 - Use Coil for image loading with crossfade enabled.
 - Use Media3 for all audio logic.
 - Ensure all file access uses the Scoped Storage / Storage Access Framework (SAF) approach for Android 13+.
+- Each feature folder contains one composable. If that composable uses other composables, they get their own file in the components folder. Prefer one composable per file.
 
 # Error Handling
 - If a folder has no image, use a high-contrast colorful placeholder icon, never a text "Error" message.
