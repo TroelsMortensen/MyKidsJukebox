@@ -139,8 +139,8 @@ fun FolderGridCard(
                         onClick = onPlayClick,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(72.dp),
-                        shape = RoundedCornerShape(36.dp),
+                            .height(60.dp),
+                        shape = RoundedCornerShape(30.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorScheme.secondary,
                             contentColor = colorScheme.onSecondary
