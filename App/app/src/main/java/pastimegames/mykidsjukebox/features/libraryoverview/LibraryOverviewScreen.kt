@@ -124,7 +124,12 @@ fun LibraryOverviewScreen(
         scanner.scanFolderItemsIncremental(context, folder).collect { event ->
             when (event) {
                 is LibraryScanner.ScanEvent.Batch -> {
-                    gridItems = gridItems + event.items
+                    gridItems = appendUniqueItems(gridItems, event.items)
+                    quickScanResult = event.quickScanResult
+                }
+
+                is LibraryScanner.ScanEvent.ItemsUpdated -> {
+                    gridItems = applyItemUpdates(gridItems, event.items)
                     quickScanResult = event.quickScanResult
                 }
 
@@ -243,4 +248,27 @@ private fun LibraryOverviewContent(
             )
         }
     }
+}
+
+private fun appendUniqueItems(
+    existingItems: List<FolderGridItem>,
+    incomingItems: List<FolderGridItem>
+): List<FolderGridItem> {
+    if (incomingItems.isEmpty()) {
+        return existingItems
+    }
+    val existingUris = existingItems.map { it.targetUri }.toHashSet()
+    val newItems = incomingItems.filter { !existingUris.contains(it.targetUri) }
+    return if (newItems.isEmpty()) existingItems else existingItems + newItems
+}
+
+private fun applyItemUpdates(
+    existingItems: List<FolderGridItem>,
+    updatedItems: List<FolderGridItem>
+): List<FolderGridItem> {
+    if (updatedItems.isEmpty()) {
+        return existingItems
+    }
+    val updatedByUri = updatedItems.associateBy { it.targetUri }
+    return existingItems.map { item -> updatedByUri[item.targetUri] ?: item }
 }
