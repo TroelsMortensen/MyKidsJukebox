@@ -203,8 +203,8 @@ private fun LibraryOverviewContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (!state.isRootSelected) {
             SelectFolderState(

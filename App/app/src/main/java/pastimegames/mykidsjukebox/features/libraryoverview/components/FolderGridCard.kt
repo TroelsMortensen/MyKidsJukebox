@@ -110,7 +110,7 @@ fun FolderGridCard(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp),
+                    .padding(6.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -134,7 +134,7 @@ fun FolderGridCard(
                         itemKind = resolvedItem.kind,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(2.dp)
+                            .padding(0.dp)
                     )
                 }
                 if (shouldShowPlayButton) {
