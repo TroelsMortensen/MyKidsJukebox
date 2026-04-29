@@ -44,7 +44,7 @@ internal fun buildPlayerLayoutTokens(
         closeCornerRadius = closeButtonHeight / 2f,
         artworkHeightFraction = if (isWideLayout) 0.72f else 0.78f,
         artworkWidthFraction = if (isWideLayout) 0.75f else 0.9f,
-        timelineTextWidth = (maxWidth * 0.11f).coerceIn(56.dp, 96.dp),
+        timelineTextWidth = (maxWidth * 0.12f).coerceIn(64.dp, 104.dp),
         timelineItemSpacing = (maxWidth * 0.015f).coerceIn(8.dp, 14.dp),
         timelineHeight = (maxWidth * 0.012f).coerceIn(8.dp, 14.dp),
         controlsSpacing = (maxHeight * 0.01f).coerceIn(6.dp, 14.dp),
