@@ -88,7 +88,7 @@ fun FolderGridCard(
     }
 
     val shouldShowPlayButton = resolvedItem.kind == LibraryItemKind.Audio
-    val cardAspectRatio = if (resolvedItem.kind == LibraryItemKind.Audio) 0.68f else 0.78f
+    val cardAspectRatio = if (resolvedItem.kind == LibraryItemKind.Audio) 0.62f else 0.70f
     val maxCardWidth = 320.dp
 
     Box(
@@ -110,7 +110,7 @@ fun FolderGridCard(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(14.dp),
+                    .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -134,7 +134,7 @@ fun FolderGridCard(
                         itemKind = resolvedItem.kind,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(6.dp)
+                            .padding(2.dp)
                     )
                 }
                 if (shouldShowPlayButton) {
