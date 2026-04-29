@@ -39,6 +39,7 @@ import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import pastimegames.mykidsjukebox.features.libraryoverview.components.FolderArtwork
 
 @Composable
 fun FolderGridCard(
@@ -130,7 +131,9 @@ fun FolderGridCard(
                         artworkUri = resolvedItem.artworkUri,
                         artworkIsLoading = resolvedItem.artworkIsLoading,
                         itemKind = resolvedItem.kind,
-                        modifier = Modifier.size(artworkSize)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(6.dp)
                     )
                 }
                 if (shouldShowPlayButton) {
