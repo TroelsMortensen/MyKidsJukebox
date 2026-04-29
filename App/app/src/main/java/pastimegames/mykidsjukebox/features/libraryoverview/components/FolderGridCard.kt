@@ -37,14 +37,17 @@ import androidx.compose.ui.unit.dp
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
 import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
+import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
 fun FolderGridCard(
     item: FolderGridItem,
+    context: Context,
     scanner: LibraryScanner,
     quickScanResult: LibraryScanner.QuickScanResult?,
+    playEnabled: Boolean,
     onClick: () -> Unit,
     onPlayClick: () -> Unit
 ) {
@@ -59,10 +62,10 @@ fun FolderGridCard(
             return@LaunchedEffect
         }
         val resolvedArtworkUri = withContext(Dispatchers.IO) {
-            scanner.resolveArtworkForItem(item, quickScan)
+            scanner.resolveArtworkForItem(context, item, quickScan)
         }
         val resolvedCounts = withContext(Dispatchers.IO) {
-            scanner.resolveFolderCounts(item, quickScan)
+            scanner.resolveFolderCounts(context, item, quickScan)
         }
         artworkUri = resolvedArtworkUri ?: artworkUri
         artworkIsLoading = false
@@ -137,6 +140,7 @@ fun FolderGridCard(
                 if (shouldShowPlayButton) {
                     Button(
                         onClick = onPlayClick,
+                        enabled = playEnabled,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(60.dp),

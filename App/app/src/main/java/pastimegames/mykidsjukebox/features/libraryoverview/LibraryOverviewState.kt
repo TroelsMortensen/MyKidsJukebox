@@ -8,5 +8,6 @@ data class LibraryOverviewState(
     val currentFolderName: String,
     val gridItems: List<FolderGridItem>,
     val hasBrowsableContent: Boolean,
+    val isScanInProgress: Boolean,
     val errorMessage: String?
 )

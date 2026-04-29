@@ -1,5 +1,6 @@
 package pastimegames.mykidsjukebox.features.libraryoverview.components
 
+import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,8 +17,10 @@ import pastimegames.mykidsjukebox.data.library.LibraryScanner
 @Composable
 fun FolderGrid(
     items: List<FolderGridItem>,
+    context: Context,
     scanner: LibraryScanner,
     quickScanResult: LibraryScanner.QuickScanResult?,
+    playEnabled: Boolean,
     onItemClick: (FolderGridItem) -> Unit,
     onPlayClick: (FolderGridItem) -> Unit
 ) {
@@ -40,8 +43,10 @@ fun FolderGrid(
         ) { item ->
             FolderGridCard(
                 item = item,
+                context = context,
                 scanner = scanner,
                 quickScanResult = quickScanResult,
+                playEnabled = playEnabled,
                 onClick = { onItemClick(item) },
                 onPlayClick = { onPlayClick(item) }
             )
