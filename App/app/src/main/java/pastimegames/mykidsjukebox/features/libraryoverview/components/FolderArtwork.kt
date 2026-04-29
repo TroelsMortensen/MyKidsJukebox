@@ -79,7 +79,6 @@ fun FolderArtwork(
     } else {
         Modifier
             .fillMaxSize()
-            .background(color = colorScheme.tertiary, shape = shape)
     }
 
     Box(modifier = modifier.clip(shape)) {
