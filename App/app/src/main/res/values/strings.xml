@@ -6,6 +6,7 @@
     <string name="select_folder_permission_error">Could not keep access to this folder. Please choose it again.</string>
     <string name="empty_folder_has_content_elsewhere">No stories in this folder. Try going back.</string>
     <string name="empty_folder_message">This folder is empty.</string>
+    <string name="library_scanning_message">Loading your stories...</string>
     <string name="up_next">Up next</string>
     <string name="close">Close</string>
     <string name="play">Play</string>

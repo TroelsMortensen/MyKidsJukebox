@@ -219,6 +219,9 @@ private fun LibraryOverviewContent(
 
         if (state.gridItems.isEmpty()) {
             if (state.isScanInProgress) {
+                EmptyFolderState(
+                    message = stringResource(R.string.library_scanning_message)
+                )
                 return@Column
             }
             EmptyFolderState(
