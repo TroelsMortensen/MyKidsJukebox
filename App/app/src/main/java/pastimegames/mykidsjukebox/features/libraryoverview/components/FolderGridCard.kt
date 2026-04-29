@@ -115,7 +115,7 @@ fun FolderGridCard(
                     text = resolvedItem.name,
                     textAlign = TextAlign.Center,
                     color = colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
