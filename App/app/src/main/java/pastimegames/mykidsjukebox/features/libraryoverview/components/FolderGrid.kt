@@ -31,7 +31,7 @@ fun FolderGrid(
     LazyVerticalGrid(
         columns = GridCells.Fixed(columnCount),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(40.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         items(

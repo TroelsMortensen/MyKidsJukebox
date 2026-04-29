@@ -4,8 +4,8 @@ import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,7 +39,6 @@ import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import pastimegames.mykidsjukebox.features.libraryoverview.components.FolderArtwork
 
 @Composable
 fun FolderGridCard(
@@ -86,7 +85,7 @@ fun FolderGridCard(
     }
 
     val shouldShowPlayButton = resolvedItem.kind == LibraryItemKind.Audio
-    val cardHeight = if (resolvedItem.kind == LibraryItemKind.Audio) 390.dp else 320.dp
+    val cardAspectRatio = if (resolvedItem.kind == LibraryItemKind.Audio) 0.68f else 0.78f
     val maxCardWidth = 320.dp
 
     Box(
@@ -98,7 +97,7 @@ fun FolderGridCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = maxCardWidth)
-                .height(cardHeight)
+                .aspectRatio(cardAspectRatio)
                 .clip(RoundedCornerShape(36.dp))
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(36.dp),
@@ -120,13 +119,12 @@ fun FolderGridCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                BoxWithConstraints(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f, fill = true),
                     contentAlignment = Alignment.TopCenter
                 ) {
-                    val artworkSize = minOf(maxWidth, maxHeight)
                     FolderArtwork(
                         artworkUri = resolvedItem.artworkUri,
                         artworkIsLoading = resolvedItem.artworkIsLoading,

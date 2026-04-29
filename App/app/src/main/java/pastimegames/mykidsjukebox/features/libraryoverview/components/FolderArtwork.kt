@@ -106,7 +106,7 @@ fun FolderArtwork(
             Image(
                 painter = artworkPainter,
                 contentDescription = stringResource(R.string.folder_artwork_description),
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .alpha(artworkAlpha)
