@@ -57,8 +57,7 @@ internal fun PlayerContent(
                     .weight(1f, fill = true),
                 contentAlignment = Alignment.Center
             ) {
-                val sizeFromHeight = maxHeight * layoutTokens.artworkHeightFraction
-                val artworkSize = minOf(sizeFromHeight, maxWidth * layoutTokens.artworkWidthFraction)
+                val artworkSize = minOf(maxHeight, maxWidth)
 
                 PlayerArtwork(
                     artworkUri = state.artworkUri,
