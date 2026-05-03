@@ -33,24 +33,24 @@ internal fun buildPlayerLayoutTokens(
     val isWideLayout = maxWidth > maxHeight
 
     val closeButtonHeight = (maxWidth * 0.14f).coerceIn(100.dp, 136.dp)
-    val playButtonHeight = (maxHeight * if (isWideLayout) 0.18f else 0.24f).coerceIn(100.dp, 220.dp)
+    val playButtonHeight = (maxHeight * if (isWideLayout) 0.14f else 0.18f).coerceIn(72.dp, 180.dp)
     val queueItemBaseSize = (maxWidth * if (isWideLayout) 0.14f else 0.20f).coerceIn(72.dp, 148.dp)
 
     return PlayerLayoutTokens(
-        contentPadding = (maxWidth * 0.04f).coerceIn(16.dp, 32.dp),
-        sectionSpacing = (maxHeight * 0.02f).coerceIn(12.dp, 24.dp),
+        contentPadding = (maxWidth * 0.02f).coerceIn(8.dp, 20.dp),
+        sectionSpacing = (maxHeight * 0.012f).coerceIn(8.dp, 16.dp),
         closeButtonHeight = closeButtonHeight,
         closeIconSize = (closeButtonHeight * 0.65f).coerceIn(56.dp, 88.dp),
         closeCornerRadius = closeButtonHeight / 2f,
-        artworkHeightFraction = if (isWideLayout) 0.72f else 0.78f,
-        artworkWidthFraction = if (isWideLayout) 0.75f else 0.9f,
+        artworkHeightFraction = if (isWideLayout) 0.78f else 0.84f,
+        artworkWidthFraction = if (isWideLayout) 0.82f else 0.95f,
         timelineTextWidth = (maxWidth * 0.12f).coerceIn(64.dp, 104.dp),
         timelineItemSpacing = (maxWidth * 0.015f).coerceIn(8.dp, 14.dp),
         timelineHeight = (maxWidth * 0.012f).coerceIn(8.dp, 14.dp),
-        controlsSpacing = (maxHeight * 0.01f).coerceIn(6.dp, 14.dp),
+        controlsSpacing = (maxHeight * 0.006f).coerceIn(4.dp, 10.dp),
         playButtonHeight = playButtonHeight,
         playIconSize = (playButtonHeight * 0.82f).coerceIn(72.dp, 188.dp),
-        queueSectionSpacing = (maxHeight * 0.01f).coerceIn(8.dp, 14.dp),
+        queueSectionSpacing = (maxHeight * 0.006f).coerceIn(4.dp, 10.dp),
         queueItemBaseSize = queueItemBaseSize,
         queueItemMinSize = 56.dp,
         queueItemShrinkStep = (queueItemBaseSize * 0.1f).coerceIn(4.dp, 12.dp),

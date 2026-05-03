@@ -1,6 +1,7 @@
 package pastimegames.mykidsjukebox.features.libraryoverview.components
 
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
@@ -105,7 +107,12 @@ fun FolderGridCard(
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(36.dp),
             colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            border = if (shouldShowPlayButton) {
+                BorderStroke(2.dp, Color(0x3982b8FF))
+            } else {
+                BorderStroke(2.dp, Color(0xFFA88F59))
+            }
         ) {
             Column(
                 modifier = Modifier
