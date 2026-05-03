@@ -33,7 +33,7 @@ internal fun buildPlayerLayoutTokens(
     val isWideLayout = maxWidth > maxHeight
 
     val closeButtonHeight = (maxWidth * 0.14f).coerceIn(100.dp, 136.dp)
-    val playButtonHeight = (maxHeight * if (isWideLayout) 0.14f else 0.18f).coerceIn(72.dp, 180.dp)
+    val playButtonHeight = (maxWidth * 0.14f).coerceIn(100.dp, 136.dp)
     val queueItemBaseSize = (maxWidth * if (isWideLayout) 0.14f else 0.20f).coerceIn(72.dp, 148.dp)
 
     return PlayerLayoutTokens(
