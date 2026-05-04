@@ -32,7 +32,7 @@ Toddlers and young children who benefit from **big touch targets**, **minimal te
 
 First, here is an example of the file structure, you are supposed to follow:
 
-![Example file structure](images/FolderAndFileStructure.png)
+![Example file structure](Images/FolderAndFileStructure.png)
 
 Each folder can contain an optional "cover.jpg" image, which will be displayed on the folder card.
 
@@ -42,13 +42,13 @@ Each mp3 file can have an optional jpg file with the exact same name, but with a
 
 The app will scan the folders in the selected root folder and build a grid of cards:
 
-![Library view](images/Library.png)
+![Library view](Images/Library.png)
 
 ### List of audio files
 
 When navigating into a folder, which contains audio files, the app will show a list of audio file cards. These have a play button:
 
-![List of audio files](images/AudioFileCards.png)
+![List of audio files](Images/AudioFileCards.png)
 
 The big red button is to "go back".
 
@@ -58,7 +58,7 @@ Clicking a green play button will open the player screen, which will play the au
 
 Here is the player screen:
 
-![Player screen](images/PlayerScreen.png)
+![Player screen](Images/PlayerScreen.png)
 
 - The red button stops the track and returns to the list of audio files.
 - The artkwork (if present) is displayed in the center of the screen.
