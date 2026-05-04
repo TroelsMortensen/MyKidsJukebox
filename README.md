@@ -52,7 +52,7 @@ When navigating into a folder, which contains audio files, the app will show a l
 
 The big red button is to "go back".
 
-Clicking a green play button will open the player screen, which will play the audio file.
+Clicking a green play button will open the player screen, which will play the audio file, and queue up subsequent audio files in alphabetical order.
 
 ### Player screen
 
