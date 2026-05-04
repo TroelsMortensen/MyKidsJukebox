@@ -35,10 +35,12 @@ Establish persistent access to the Android file system and recursively map the l
 
 ## Task 4: UI
 
-- The right side time-left needs more space. 10:04 made a line break.
-- player screen, vertical, the main artwork grows too large.
-- player screen, horizontal, layout just messed up.
+- player screen, horizontal, layout just messed up. - Ignoring for now, just no support for landscape mode.
 - I stedet for "this folder is empty", lave noget loading graphic....
+
+## Task
+
+Queue loop around. 
 
 ## Task 5: Persistence & Logic
 *Goal: Make it a reliable tool.*
