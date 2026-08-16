@@ -31,7 +31,8 @@ Establish persistent access to the Android file system and recursively map the l
 ## Task 3: The Minimalist Player
 *Goal: Audio playback with zero distractions.*
 
-- **Sub-task 3.3:** Background playback support (so the screen can be off).
+- sort folders and audio files alphanumerically.
+
 
 ## Task 4: UI
 
