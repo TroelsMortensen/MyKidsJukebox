@@ -40,8 +40,11 @@ import pastimegames.mykidsjukebox.data.library.FolderGridItem
 import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
 import android.content.Context
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 
 @Composable
 fun FolderGridCard(
@@ -63,16 +66,25 @@ fun FolderGridCard(
             artworkIsLoading = false
             return@LaunchedEffect
         }
-        val resolvedArtworkUri = withContext(Dispatchers.IO) {
-            scanner.resolveArtworkForItem(context, item, quickScan)
+        try {
+            withTimeout(15_000) {
+                val resolvedArtworkUri = withContext(Dispatchers.IO) {
+                    scanner.resolveArtworkForItem(context, item, quickScan)
+                }
+                val resolvedCounts = withContext(Dispatchers.IO) {
+                    scanner.resolveFolderCounts(context, item, quickScan)
+                }
+                artworkUri = resolvedArtworkUri ?: artworkUri
+                childFolderCount = resolvedCounts?.childFolderCount
+                audioFileCount = resolvedCounts?.audioFileCount
+            }
+        } catch (_: TimeoutCancellationException) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+        } finally {
+            artworkIsLoading = false
         }
-        val resolvedCounts = withContext(Dispatchers.IO) {
-            scanner.resolveFolderCounts(context, item, quickScan)
-        }
-        artworkUri = resolvedArtworkUri ?: artworkUri
-        artworkIsLoading = false
-        childFolderCount = resolvedCounts?.childFolderCount
-        audioFileCount = resolvedCounts?.audioFileCount
     }
 
     val resolvedItem = item.copy(

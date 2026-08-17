@@ -7,6 +7,8 @@
     <string name="empty_folder_has_content_elsewhere">No stories in this folder. Try going back.</string>
     <string name="empty_folder_message">This folder is empty.</string>
     <string name="library_scanning_message">Loading your stories...</string>
+    <string name="library_scan_failed_message">Could not load your stories. Try again.</string>
+    <string name="library_scan_retry_button">Try Again</string>
     <string name="up_next">Up next</string>
     <string name="close">Close</string>
     <string name="play">Play</string>

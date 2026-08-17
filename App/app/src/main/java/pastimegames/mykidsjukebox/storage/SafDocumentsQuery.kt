@@ -2,7 +2,13 @@ package pastimegames.mykidsjukebox.storage
 
 import android.content.Context
 import android.net.Uri
+import android.os.CancellationSignal
+import android.os.OperationCanceledException
 import android.provider.DocumentsContract
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.job
 
 data class SafChildDocument(
     val documentId: String,
@@ -15,7 +21,7 @@ data class SafChildDocument(
         get() = mimeType == DocumentsContract.Document.MIME_TYPE_DIR
 }
 
-fun queryChildDocuments(
+suspend fun queryChildDocuments(
     context: Context,
     folderUri: Uri
 ): List<SafChildDocument> {
@@ -24,10 +30,10 @@ fun queryChildDocuments(
     return result
 }
 
-fun forEachChildDocument(
+suspend fun forEachChildDocument(
     context: Context,
     folderUri: Uri,
-    onDocument: (SafChildDocument) -> Unit
+    onDocument: suspend (SafChildDocument) -> Unit
 ): Boolean {
     val resolver = context.contentResolver
     val folderDocumentId = try {
@@ -43,9 +49,20 @@ fun forEachChildDocument(
         DocumentsContract.Document.COLUMN_MIME_TYPE,
         DocumentsContract.Document.COLUMN_FLAGS
     )
+    val cancellationSignal = CancellationSignal()
+    val cancelHandle = currentCoroutineContext().job.invokeOnCompletion {
+        cancellationSignal.cancel()
+    }
 
     return try {
-        resolver.query(childrenUri, projection, null, null, null)?.use { cursor ->
+        resolver.query(
+            childrenUri,
+            projection,
+            null,
+            null,
+            null,
+            cancellationSignal
+        )?.use { cursor ->
             val idIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
             val nameIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
             val mimeIndex = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE)
@@ -55,6 +72,7 @@ fun forEachChildDocument(
             }
 
             while (cursor.moveToNext()) {
+                currentCoroutineContext().ensureActive()
                 val documentId = cursor.getString(idIndex) ?: continue
                 val displayName = if (nameIndex >= 0) cursor.getString(nameIndex) else null
                 val mimeType = if (mimeIndex >= 0) cursor.getString(mimeIndex) else null
@@ -62,19 +80,24 @@ fun forEachChildDocument(
                 val documentUri = DocumentsContract.buildDocumentUriUsingTree(folderUri, documentId)
                 onDocument(
                     SafChildDocument(
-                    documentId = documentId,
-                    displayName = displayName,
-                    mimeType = mimeType,
-                    flags = flags,
-                    documentUri = documentUri
+                        documentId = documentId,
+                        displayName = displayName,
+                        mimeType = mimeType,
+                        flags = flags,
+                        documentUri = documentUri
                     )
                 )
             }
         } ?: return false
         true
-    } catch (_: SecurityException) {
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: OperationCanceledException) {
+        currentCoroutineContext().ensureActive()
         false
-    } catch (_: IllegalArgumentException) {
+    } catch (_: Exception) {
         false
+    } finally {
+        cancelHandle.dispose()
     }
 }

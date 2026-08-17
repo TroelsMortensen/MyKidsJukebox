@@ -43,6 +43,8 @@ class LibraryScanner {
             val quickScanResult: QuickScanResult,
             val sortedAudioItems: List<FolderGridItem>
         ) : ScanEvent
+
+        data object Failed : ScanEvent
     }
 
     fun scanFolderItemsIncremental(
@@ -57,8 +59,34 @@ class LibraryScanner {
         val pendingAudioShellItems = mutableListOf<FolderGridItem>()
         val audioShellItems = mutableListOf<FolderGridItem>()
         var hasBrowsableContent = false
+        var hasEmittedAny = false
 
-        forEachChildDocument(context, currentFolder.uri) { child ->
+        fun snapshotQuickScan(): QuickScanResult {
+            return QuickScanResult(
+                childDirectoryUris = childDirectoryUris.toSet(),
+                siblingJpgByLowerName = siblingJpgByLowerName.toMap()
+            )
+        }
+
+        suspend fun emitBatch(pendingItems: MutableList<FolderGridItem>, force: Boolean) {
+            if (pendingItems.isEmpty()) {
+                return
+            }
+            val shouldFlush = force || !hasEmittedAny || pendingItems.size >= batchSize
+            if (!shouldFlush) {
+                return
+            }
+            send(
+                ScanEvent.Batch(
+                    items = pendingItems.toList(),
+                    quickScanResult = snapshotQuickScan()
+                )
+            )
+            pendingItems.clear()
+            hasEmittedAny = true
+        }
+
+        val listedSuccessfully = forEachChildDocument(context, currentFolder.uri) { child ->
             if (child.isDirectory) {
                 hasBrowsableContent = true
                 childDirectoryUris += child.documentUri
@@ -71,19 +99,7 @@ class LibraryScanner {
                     childFolderCount = null,
                     audioFileCount = null
                 )
-
-                if (pendingFolderItems.size >= batchSize) {
-                    trySend(
-                        ScanEvent.Batch(
-                            items = pendingFolderItems.toList(),
-                            quickScanResult = QuickScanResult(
-                                childDirectoryUris = childDirectoryUris.toSet(),
-                                siblingJpgByLowerName = siblingJpgByLowerName.toMap()
-                            )
-                        )
-                    )
-                    pendingFolderItems.clear()
-                }
+                emitBatch(pendingFolderItems, force = false)
                 return@forEachChildDocument
             }
 
@@ -103,76 +119,41 @@ class LibraryScanner {
                 )
                 audioShellItems += shellItem
                 pendingAudioShellItems += shellItem
-                if (pendingAudioShellItems.size >= batchSize) {
-                    trySend(
-                        ScanEvent.Batch(
-                            items = pendingAudioShellItems.toList(),
-                            quickScanResult = QuickScanResult(
-                                childDirectoryUris = childDirectoryUris.toSet(),
-                                siblingJpgByLowerName = siblingJpgByLowerName.toMap()
-                            )
-                        )
-                    )
-                    pendingAudioShellItems.clear()
-                }
+                emitBatch(pendingAudioShellItems, force = false)
             }
         }
 
-        if (pendingFolderItems.isNotEmpty()) {
-            trySend(
-                ScanEvent.Batch(
-                    items = pendingFolderItems.toList(),
-                    quickScanResult = QuickScanResult(
-                        childDirectoryUris = childDirectoryUris.toSet(),
-                        siblingJpgByLowerName = siblingJpgByLowerName.toMap()
-                    )
-                )
-            )
-            pendingFolderItems.clear()
-        }
+        emitBatch(pendingFolderItems, force = true)
+        emitBatch(pendingAudioShellItems, force = true)
 
-        if (pendingAudioShellItems.isNotEmpty()) {
-            trySend(
-                ScanEvent.Batch(
-                    items = pendingAudioShellItems.toList(),
-                    quickScanResult = QuickScanResult(
-                        childDirectoryUris = childDirectoryUris.toSet(),
-                        siblingJpgByLowerName = siblingJpgByLowerName.toMap()
-                    )
-                )
-            )
-            pendingAudioShellItems.clear()
+        if (!listedSuccessfully) {
+            send(ScanEvent.Failed)
+            return@channelFlow
         }
 
         val audioUpdates = buildAudioArtworkUpdates(audioShellItems, siblingJpgByLowerName)
         if (audioUpdates.isNotEmpty()) {
             audioUpdates.chunked(batchSize).forEach { batch ->
-                trySend(
+                send(
                     ScanEvent.ItemsUpdated(
                         items = batch,
-                        quickScanResult = QuickScanResult(
-                            childDirectoryUris = childDirectoryUris.toSet(),
-                            siblingJpgByLowerName = siblingJpgByLowerName.toMap()
-                        )
+                        quickScanResult = snapshotQuickScan()
                     )
                 )
             }
         }
 
         val sortedAudioItems = audioUpdates.sortedBy { it.name.lowercase() }
-        trySend(
+        send(
             ScanEvent.Complete(
                 hasBrowsableContent = hasBrowsableContent,
-                quickScanResult = QuickScanResult(
-                    childDirectoryUris = childDirectoryUris.toSet(),
-                    siblingJpgByLowerName = siblingJpgByLowerName.toMap()
-                ),
+                quickScanResult = snapshotQuickScan(),
                 sortedAudioItems = sortedAudioItems
             )
         )
     }.flowOn(Dispatchers.IO)
 
-    fun resolveArtworkForItem(
+    suspend fun resolveArtworkForItem(
         context: Context,
         item: FolderGridItem,
         quickScanResult: QuickScanResult
@@ -197,7 +178,7 @@ class LibraryScanner {
         }
     }
 
-    fun resolveFolderCounts(
+    suspend fun resolveFolderCounts(
         context: Context,
         item: FolderGridItem,
         quickScanResult: QuickScanResult
@@ -215,7 +196,7 @@ class LibraryScanner {
         )
     }
 
-    private fun resolveFolderMetadata(context: Context, folderUri: Uri): FolderMetadata? {
+    private suspend fun resolveFolderMetadata(context: Context, folderUri: Uri): FolderMetadata? {
         folderMetadataCache[folderUri]?.let { return it }
         var coverUri: Uri? = null
         var childFolderCount = 0

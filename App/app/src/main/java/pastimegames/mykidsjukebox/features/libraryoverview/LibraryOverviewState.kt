@@ -9,5 +9,6 @@ data class LibraryOverviewState(
     val gridItems: List<FolderGridItem>,
     val hasBrowsableContent: Boolean,
     val isScanInProgress: Boolean,
+    val scanFailed: Boolean,
     val errorMessage: String?
 )

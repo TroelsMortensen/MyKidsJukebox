@@ -22,8 +22,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
 import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
@@ -32,10 +37,14 @@ import pastimegames.mykidsjukebox.features.libraryoverview.components.EmptyFolde
 import pastimegames.mykidsjukebox.features.libraryoverview.components.FolderGrid
 import pastimegames.mykidsjukebox.features.libraryoverview.components.LibraryHeader
 import pastimegames.mykidsjukebox.features.libraryoverview.components.NavigationButtons
+import pastimegames.mykidsjukebox.features.libraryoverview.components.ScanFailedState
 import pastimegames.mykidsjukebox.features.libraryoverview.components.SelectFolderState
 import pastimegames.mykidsjukebox.features.shared.components.rememberUiFeedback
 import pastimegames.mykidsjukebox.R
 import pastimegames.mykidsjukebox.storage.toDocumentFolder
+
+private const val FOLDER_EXISTS_TIMEOUT_MS = 8_000L
+private const val LIBRARY_SCAN_TIMEOUT_MS = 30_000L
 
 @Composable
 fun LibraryOverviewScreen(
@@ -78,11 +87,14 @@ fun LibraryOverviewScreen(
 
     LaunchedEffect(rootUriString) {
         val savedUri = rootUriString ?: return@LaunchedEffect
-        val doc = toDocumentFolder(context, Uri.parse(savedUri))
-        if (doc == null || !doc.exists()) {
-            scope.launch {
-                folderStore.clearRootUri()
+        val folderValid = withTimeoutOrNull(FOLDER_EXISTS_TIMEOUT_MS) {
+            withContext(Dispatchers.IO) {
+                val doc = toDocumentFolder(context, Uri.parse(savedUri))
+                doc != null && doc.exists()
             }
+        }
+        if (folderValid == false) {
+            folderStore.clearRootUri()
             folderStackUris.clear()
             return@LaunchedEffect
         }
@@ -104,14 +116,17 @@ fun LibraryOverviewScreen(
     var quickScanResult by remember(currentFolder?.uri?.toString()) { mutableStateOf<LibraryScanner.QuickScanResult?>(null) }
     var hasBrowsableContent by remember(currentFolder?.uri?.toString()) { mutableStateOf(false) }
     var isScanInProgress by remember(currentFolder?.uri?.toString()) { mutableStateOf(false) }
+    var scanFailed by remember(currentFolder?.uri?.toString()) { mutableStateOf(false) }
+    var scanAttempt by remember(currentFolder?.uri?.toString()) { mutableStateOf(0) }
     var playableAudioItems by remember(currentFolder?.uri?.toString()) { mutableStateOf(emptyList<FolderGridItem>()) }
-    LaunchedEffect(currentFolder?.uri?.toString()) {
+    LaunchedEffect(currentFolder?.uri?.toString(), scanAttempt) {
         val folder = currentFolder
         if (folder == null) {
             gridItems = emptyList()
             quickScanResult = null
             hasBrowsableContent = false
             isScanInProgress = false
+            scanFailed = false
             playableAudioItems = emptyList()
             return@LaunchedEffect
         }
@@ -120,26 +135,51 @@ fun LibraryOverviewScreen(
         quickScanResult = null
         hasBrowsableContent = false
         isScanInProgress = true
+        scanFailed = false
         playableAudioItems = emptyList()
-        scanner.scanFolderItemsIncremental(context, folder).collect { event ->
-            when (event) {
-                is LibraryScanner.ScanEvent.Batch -> {
-                    gridItems = appendUniqueItems(gridItems, event.items)
-                    quickScanResult = event.quickScanResult
-                }
+        try {
+            withTimeout(LIBRARY_SCAN_TIMEOUT_MS) {
+                scanner.scanFolderItemsIncremental(context, folder).collect { event ->
+                    when (event) {
+                        is LibraryScanner.ScanEvent.Batch -> {
+                            gridItems = appendUniqueItems(gridItems, event.items)
+                            quickScanResult = event.quickScanResult
+                        }
 
-                is LibraryScanner.ScanEvent.ItemsUpdated -> {
-                    gridItems = applyItemUpdates(gridItems, event.items)
-                    quickScanResult = event.quickScanResult
-                }
+                        is LibraryScanner.ScanEvent.ItemsUpdated -> {
+                            gridItems = applyItemUpdates(gridItems, event.items)
+                            quickScanResult = event.quickScanResult
+                        }
 
-                is LibraryScanner.ScanEvent.Complete -> {
-                    quickScanResult = event.quickScanResult
-                    hasBrowsableContent = event.hasBrowsableContent
-                    playableAudioItems = event.sortedAudioItems
-                    isScanInProgress = false
+                        is LibraryScanner.ScanEvent.Complete -> {
+                            quickScanResult = event.quickScanResult
+                            hasBrowsableContent = event.hasBrowsableContent
+                            playableAudioItems = event.sortedAudioItems
+                        }
+
+                        LibraryScanner.ScanEvent.Failed -> {
+                            scanFailed = true
+                            if (playableAudioItems.isEmpty()) {
+                                playableAudioItems = playableItemsFromGrid(gridItems)
+                            }
+                        }
+                    }
                 }
             }
+        } catch (_: TimeoutCancellationException) {
+            scanFailed = true
+            if (playableAudioItems.isEmpty()) {
+                playableAudioItems = playableItemsFromGrid(gridItems)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            scanFailed = true
+            if (playableAudioItems.isEmpty()) {
+                playableAudioItems = playableItemsFromGrid(gridItems)
+            }
+        } finally {
+            isScanInProgress = false
         }
     }
 
@@ -150,6 +190,7 @@ fun LibraryOverviewScreen(
         gridItems = gridItems,
         hasBrowsableContent = hasBrowsableContent,
         isScanInProgress = isScanInProgress,
+        scanFailed = scanFailed,
         errorMessage = errorMessage
     )
     val actions = LibraryOverviewActions(
@@ -178,6 +219,9 @@ fun LibraryOverviewScreen(
             if (selectedIndex >= 0) {
                 onOpenPlayer(playableAudioItems, selectedIndex)
             }
+        },
+        onRetryScanClick = {
+            scanAttempt += 1
         }
     )
 
@@ -229,6 +273,14 @@ private fun LibraryOverviewContent(
                 )
                 return@Column
             }
+            if (state.scanFailed) {
+                ScanFailedState(
+                    message = stringResource(R.string.library_scan_failed_message),
+                    buttonLabel = stringResource(R.string.library_scan_retry_button),
+                    onRetryClick = actions.onRetryScanClick
+                )
+                return@Column
+            }
             EmptyFolderState(
                 message = if (state.hasBrowsableContent) {
                     stringResource(R.string.empty_folder_has_content_elsewhere)
@@ -271,4 +323,10 @@ private fun applyItemUpdates(
     }
     val updatedByUri = updatedItems.associateBy { it.targetUri }
     return existingItems.map { item -> updatedByUri[item.targetUri] ?: item }
+}
+
+private fun playableItemsFromGrid(items: List<FolderGridItem>): List<FolderGridItem> {
+    return items
+        .filter { it.kind == LibraryItemKind.Audio }
+        .sortedBy { it.name.lowercase() }
 }
