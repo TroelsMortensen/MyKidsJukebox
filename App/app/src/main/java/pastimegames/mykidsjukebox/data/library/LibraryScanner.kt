@@ -143,7 +143,7 @@ class LibraryScanner {
             }
         }
 
-        val sortedAudioItems = audioUpdates.sortedBy { it.name.lowercase() }
+        val sortedAudioItems = audioUpdates.sortedWith(compareBy(NaturalSort.comparator) { it.name })
         send(
             ScanEvent.Complete(
                 hasBrowsableContent = hasBrowsableContent,

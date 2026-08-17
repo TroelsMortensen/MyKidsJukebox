@@ -32,6 +32,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 import pastimegames.mykidsjukebox.data.library.FolderGridItem
 import pastimegames.mykidsjukebox.data.library.LibraryItemKind
 import pastimegames.mykidsjukebox.data.library.LibraryScanner
+import pastimegames.mykidsjukebox.data.library.NaturalSort
+import pastimegames.mykidsjukebox.data.library.sortLibraryItems
 import pastimegames.mykidsjukebox.data.settings.RootFolderStore
 import pastimegames.mykidsjukebox.features.libraryoverview.components.EmptyFolderState
 import pastimegames.mykidsjukebox.features.libraryoverview.components.FolderGrid
@@ -142,7 +144,7 @@ fun LibraryOverviewScreen(
                 scanner.scanFolderItemsIncremental(context, folder).collect { event ->
                     when (event) {
                         is LibraryScanner.ScanEvent.Batch -> {
-                            gridItems = appendUniqueItems(gridItems, event.items)
+                            gridItems = sortLibraryItems(appendUniqueItems(gridItems, event.items))
                             quickScanResult = event.quickScanResult
                         }
 
@@ -328,5 +330,5 @@ private fun applyItemUpdates(
 private fun playableItemsFromGrid(items: List<FolderGridItem>): List<FolderGridItem> {
     return items
         .filter { it.kind == LibraryItemKind.Audio }
-        .sortedBy { it.name.lowercase() }
+        .sortedWith(compareBy(NaturalSort.comparator) { it.name })
 }
