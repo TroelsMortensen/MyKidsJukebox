@@ -46,7 +46,7 @@ import pastimegames.mykidsjukebox.R
 import pastimegames.mykidsjukebox.storage.toDocumentFolder
 
 private const val FOLDER_EXISTS_TIMEOUT_MS = 8_000L
-private const val LIBRARY_SCAN_TIMEOUT_MS = 30_000L
+private const val LIBRARY_SCAN_TIMEOUT_MS = 20_000L
 
 @Composable
 fun LibraryOverviewScreen(
