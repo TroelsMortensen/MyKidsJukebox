@@ -297,6 +297,7 @@ private fun LibraryOverviewContent(
                 scanner = scanner,
                 quickScanResult = quickScanResult,
                 playEnabled = !state.isScanInProgress,
+                isScanInProgress = state.isScanInProgress,
                 onItemClick = actions.onItemClick,
                 onPlayClick = actions.onPlayClick
             )

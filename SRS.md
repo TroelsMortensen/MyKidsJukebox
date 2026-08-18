@@ -20,23 +20,10 @@ It is possible to organize the audio files into folders, each folder can have a 
 
 Later a settings screen will be added to allow the user to configure various aspects of the app. This will be parental locked, similar to YouTube Kids.
 
-## Task 1: File System Proof of Concept & Media Discovery
-
-### Goal
-Establish persistent access to the Android file system and recursively map the library into a hierarchical data model (Universe > Series > Episode).
-
-
-
-
-## Task 3: The Minimalist Player
-*Goal: Audio playback with zero distractions.*
-
-- sort folders and audio files alphanumerically.
 
 
 ## Task 4: UI
 
-- player screen, horizontal, layout just messed up. - Ignoring for now, just no support for landscape mode.
 - I stedet for "this folder is empty", lave noget loading graphic....
 
 ## Task
@@ -52,10 +39,10 @@ Queue loop around.
 - **Sub-task 4.4:** Parental Settings: Add a protected "Change Library Folder" option in the parental settings screen instead of the main browsing view.
 
 ## Task 6: Parental Settings
+* Title på front page, det skal lige have en pill shape, og hvis man holder inde i 5 sekunder, får man menu page. Her kan man skifte root dir.
 
 To be figured out.
 
-- Optional “simple mode” toggle in parental settings (e.g., hide times/progress).
 
 ## Task: Spotify
 

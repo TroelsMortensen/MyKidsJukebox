@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,7 @@ fun FolderGrid(
     scanner: LibraryScanner,
     quickScanResult: LibraryScanner.QuickScanResult?,
     playEnabled: Boolean,
+    isScanInProgress: Boolean,
     onItemClick: (FolderGridItem) -> Unit,
     onPlayClick: (FolderGridItem) -> Unit
 ) {
@@ -30,9 +34,20 @@ fun FolderGrid(
     } else {
         2
     }
+    val gridState = rememberLazyGridState()
+
+    LaunchedEffect(items.firstOrNull()?.targetUri, items.size, isScanInProgress) {
+        if (!isScanInProgress || items.isEmpty()) {
+            return@LaunchedEffect
+        }
+        gridState.requestScrollToItem(0)
+        withFrameNanos { }
+        gridState.requestScrollToItem(0)
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(columnCount),
+        state = gridState,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxSize()
