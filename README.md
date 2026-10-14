@@ -141,9 +141,8 @@ These rules match how the app scans the filesystem in [`LibraryScanner.kt`](App/
 
 ```text
 Audiobooks/                    ← select this folder in the app
-  cover.jpg                    ← optional: art for this root level
   The Big Adventure/
-    cover.jpg
+    cover.jpg                  ← optional: art for this folder
     01 Opening.mp3
     01 Opening.jpg             ← optional: art for this track
     02 The Forest.mp3
