@@ -21,6 +21,8 @@ Toddlers and young children who benefit from **big touch targets**, **minimal te
 - **Nested folders** — Organize series or authors as subfolders; open a folder by tapping its card.
 - **Optional artwork** — Folder `cover.jpg` and per-track JPGs next to each MP3.
 - **Playback** — Media3-based playback with a foreground service so audio can continue with the screen off (subject to device and battery settings).
+- **Resume progress** — The app remembers how far each story was played (Room DB, last **20** books). Progress is saved about every **10 seconds** from the playback service (including with the screen off) and when you pause or leave the player. Reopening a story continues from the saved position.
+- **Restart** — On the player screen, a circular restart button seeks the current story to the beginning and pauses.
 - **Queue** — Stories in the current folder play in **A–Z order** (by filename, case-insensitive); the player shows **Up next** so you can jump ahead.
 
 
@@ -60,10 +62,11 @@ Here is the player screen:
 
 ![Player screen](Images/PlayerScreen.png)
 
-- The red button stops the track and returns to the list of audio files.
-- The artkwork (if present) is displayed in the center of the screen.
-- Below is the queue of upcoming audio files. The user can click these to images to play the audio file. The queue will update.
+- The red button pauses and returns to the list of audio files (playback position is kept for resume).
+- The artwork (if present) is displayed in the center of the screen.
+- Below is the queue of upcoming audio files. The user can click these images to play that audio file. The queue will update.
 - The progress bar shows the progress of the current track. This is not interactive, it is just a visual indication of the progress.
+- The circular blue **restart** button (left of play) seeks to the start of the current track and pauses.
 - The green button will play/pause the current track.
 
 
@@ -159,7 +162,7 @@ Audiobooks/                    ← select this folder in the app
 3. Tap a **folder** card to **go inside** that folder.
 4. When a **back** control appears (large control at the top), tap it to **go up** one level.
 5. For a **story** (MP3), tap the **Play** button on the card to open the **player**. Tapping the folder-style navigation is for folders; playback starts from the Play control on audio cards.
-6. In the **player**, use **play / pause**, pick another upcoming story from **Up next** if shown, and use the **large close** control to return to the library.
+6. In the **player**, use **play / pause**, use **restart** to go back to the beginning of the current story, pick another upcoming story from **Up next** if shown, and use the **large close** control to return to the library. Opening a story again continues where they left off when progress was saved.
 
 ---
 

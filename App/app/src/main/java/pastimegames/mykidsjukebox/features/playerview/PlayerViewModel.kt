@@ -118,7 +118,6 @@ class PlayerViewModel(
     fun stopPlaybackForExit() {
         val controller = mediaController ?: return
         controller.pause()
-        controller.seekTo(0L)
         controller.playWhenReady = false
         refreshProgress()
     }

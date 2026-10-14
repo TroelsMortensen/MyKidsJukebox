@@ -10,13 +10,14 @@ It is possible to organize the audio files into folders, each folder can have a 
 - Media: Media3 ExoPlayer
 - Image Loading: Coil
 - Storage: Storage Access Framework (SAF)
+- Persistence: DataStore (root folder URI); Room (per-audiobook playback progress)
 
 ---
 
 ## UI layout plan
 - Initially two views:
   - The select specific book to play
-  - Showing the currently playing book, with progress bar and play/pause button
+  - Showing the currently playing book, with progress bar, play/pause, and a restart control (seek to start + pause)
 
 Later a settings screen will be added to allow the user to configure various aspects of the app. This will be parental locked, similar to YouTube Kids.
 
@@ -33,8 +34,12 @@ Queue loop around.
 ## Task 5: Persistence & Logic
 *Goal: Make it a reliable tool.*
 
-- **Sub-task 4.1:** Save current playback position (Timestamp) for every file in a local Room database or DataStore.
-- **Sub-task 4.2:** Auto-resume: When a file is clicked, start from the saved timestamp.
+### Implemented
+- **Sub-task 4.1 (done):** Save playback position in Room (`PlaybackProgressRepository`), keyed by audio URI. `PlaybackService` upserts about every 10s while playing, and on pause / destroy. Keeps the last **20** books; prunes on book start (not app start). Near-start / near-end positions are cleared.
+- **Sub-task 4.2 (done):** Auto-resume: when a file is opened (queue apply or track change), start from the saved position.
+- Player **restart** control: seek to 0 and pause (clears meaningful saved progress via pause-save rules). Closing the player pauses without seeking to 0 so progress is preserved.
+
+### Still open
 - **Sub-task 4.3:** Hidden Settings: Implement a 3-second long-press on the screen corner to allow re-selecting the root folder.
 - **Sub-task 4.4:** Parental Settings: Add a protected "Change Library Folder" option in the parental settings screen instead of the main browsing view.
 
