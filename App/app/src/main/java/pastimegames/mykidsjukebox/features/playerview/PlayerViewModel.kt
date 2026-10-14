@@ -105,6 +105,16 @@ class PlayerViewModel(
         }
     }
 
+    fun restartCurrentTrack() {
+        val controller = mediaController ?: return
+        if (controller.playbackState == Player.STATE_IDLE) {
+            controller.prepare()
+        }
+        controller.seekTo(0L)
+        controller.pause()
+        refreshProgress()
+    }
+
     fun stopPlaybackForExit() {
         val controller = mediaController ?: return
         controller.pause()

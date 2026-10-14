@@ -21,6 +21,7 @@ internal fun PlayerContent(
     state: PlayerState,
     onBack: () -> Unit,
     onPlayPauseClick: () -> Unit,
+    onRestartClick: () -> Unit,
     onQueueItemClick: (PlayerQueueItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -81,6 +82,10 @@ internal fun PlayerContent(
                 onPlayPauseClick = {
                     uiFeedback.performPrimaryActionFeedback()
                     onPlayPauseClick()
+                },
+                onRestartClick = {
+                    uiFeedback.performPrimaryActionFeedback()
+                    onRestartClick()
                 }
             )
         }

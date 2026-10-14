@@ -13,6 +13,7 @@
     <string name="close">Close</string>
     <string name="play">Play</string>
     <string name="pause">Pause</string>
+    <string name="restart">Restart</string>
     <string name="folder_artwork_description">Folder artwork</string>
     <string name="folder_icon_description">Folder</string>
     <string name="audiobook_icon_description">Audiobook</string>

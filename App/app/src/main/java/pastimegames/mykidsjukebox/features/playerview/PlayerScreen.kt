@@ -38,6 +38,7 @@ fun PlayerScreen(
         state = state,
         onBack = handleBack,
         onPlayPauseClick = viewModel::togglePlayPause,
+        onRestartClick = viewModel::restartCurrentTrack,
         onQueueItemClick = viewModel::playQueueItem,
         modifier = modifier
     )
