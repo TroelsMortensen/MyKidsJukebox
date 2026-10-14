@@ -19,16 +19,18 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import pastimegames.mykidsjukebox.R
+
+private val RestartButtonBackground = Color(0xFF219BF3)
 
 @Composable
 internal fun PlayerPlaybackControls(
@@ -79,13 +81,15 @@ internal fun PlayerPlaybackControls(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedButton(
+        Button(
             onClick = onRestartClick,
             modifier = Modifier.size(layoutTokens.restartButtonSize),
             shape = CircleShape,
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.secondary
-            )
+            colors = ButtonDefaults.buttonColors(
+                containerColor = RestartButtonBackground,
+                contentColor = Color.White
+            ),
+            border = null
         ) {
             Icon(
                 imageVector = Icons.Filled.Replay,
