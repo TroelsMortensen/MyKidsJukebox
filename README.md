@@ -151,6 +151,15 @@ Audiobooks/                    ← select this folder in the app
   Bedtime Songs/
     cover.jpg
     lullaby-01.mp3
+    lullaby-01.jpg
+    lullaby-02.mp3
+    lullaby-02.jpg
+    lullaby-03.mp3
+    lullaby-03.jpg
+    lullaby-04.mp3
+    lullaby-04.jpg
+    lullaby-05.mp3
+    lullaby-05.jpg
 ```
 
 ---
