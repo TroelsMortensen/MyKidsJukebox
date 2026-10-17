@@ -22,6 +22,8 @@ internal fun PlayerContent(
     onBack: () -> Unit,
     onPlayPauseClick: () -> Unit,
     onRestartClick: () -> Unit,
+    onSkipBackClick: () -> Unit,
+    onSkipForwardClick: () -> Unit,
     onQueueItemClick: (PlayerQueueItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -86,6 +88,14 @@ internal fun PlayerContent(
                 onRestartClick = {
                     uiFeedback.performPrimaryActionFeedback()
                     onRestartClick()
+                },
+                onSkipBackClick = {
+                    uiFeedback.performPrimaryActionFeedback()
+                    onSkipBackClick()
+                },
+                onSkipForwardClick = {
+                    uiFeedback.performPrimaryActionFeedback()
+                    onSkipForwardClick()
                 }
             )
         }

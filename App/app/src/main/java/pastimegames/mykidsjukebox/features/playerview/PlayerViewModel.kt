@@ -115,6 +115,17 @@ class PlayerViewModel(
         refreshProgress()
     }
 
+    fun seekBy(deltaMs: Long) {
+        val controller = mediaController ?: return
+        val duration = controller.duration.takeIf { it > 0L } ?: return
+        val target = (controller.currentPosition + deltaMs).coerceIn(0L, duration)
+        if (controller.playbackState == Player.STATE_IDLE) {
+            controller.prepare()
+        }
+        controller.seekTo(target)
+        refreshProgress()
+    }
+
     fun stopPlaybackForExit() {
         val controller = mediaController ?: return
         controller.pause()
@@ -267,6 +278,8 @@ class PlayerViewModel(
     }
 
     companion object {
+        const val SKIP_MS = 10_000L
+
         fun factory(
             application: Application,
             folderAudioItems: List<PlayerQueueItem>,

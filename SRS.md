@@ -17,7 +17,7 @@ It is possible to organize the audio files into folders, each folder can have a 
 ## UI layout plan
 - Initially two views:
   - The select specific book to play
-  - Showing the currently playing book, with progress bar, play/pause, and a restart control (seek to start + pause)
+  - Showing the currently playing book, with a read-only progress bar, skip back/forward 10 seconds beside the bar, play/pause, and a restart control (seek to start + pause)
 
 Later a settings screen will be added to allow the user to configure various aspects of the app. This will be parental locked, similar to YouTube Kids.
 

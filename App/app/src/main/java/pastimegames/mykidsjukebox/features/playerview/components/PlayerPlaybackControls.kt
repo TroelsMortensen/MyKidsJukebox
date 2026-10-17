@@ -2,6 +2,7 @@ package pastimegames.mykidsjukebox.features.playerview.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.SwitchAccessShortcut
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,10 +26,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import pastimegames.mykidsjukebox.R
 
 private val RestartButtonBackground = Color(0xFF219BF3)
@@ -41,6 +46,8 @@ internal fun PlayerPlaybackControls(
     layoutTokens: PlayerLayoutTokens,
     onPlayPauseClick: () -> Unit,
     onRestartClick: () -> Unit,
+    onSkipBackClick: () -> Unit,
+    onSkipForwardClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -50,9 +57,22 @@ internal fun PlayerPlaybackControls(
         Text(
             text = formatMillis(positionMs),
             textAlign = TextAlign.End,
-            modifier = Modifier.width(layoutTokens.timelineTextWidth)
+            maxLines = 1,
+            softWrap = false
         )
         Spacer(Modifier.width(layoutTokens.timelineItemSpacing))
+        SkipButton(
+            onClick = onSkipBackClick,
+            imageVector = Icons.Filled.SwitchAccessShortcut,
+            contentDescription = stringResource(R.string.skip_back_10),
+            buttonSize = layoutTokens.skipButtonSize,
+            iconSize = layoutTokens.skipIconSize,
+            // Rotate 90° clockwise, then mirror horizontally.
+            iconModifier = Modifier
+                .scale(scaleX = -1f, scaleY = 1f)
+                .rotate(90f)
+        )
+        Spacer(Modifier.width(layoutTokens.skipButtonSpacing))
         LinearProgressIndicator(
             progress = { progress },
             modifier = Modifier
@@ -61,11 +81,21 @@ internal fun PlayerPlaybackControls(
             color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
+        Spacer(Modifier.width(layoutTokens.skipButtonSpacing))
+        SkipButton(
+            onClick = onSkipForwardClick,
+            imageVector = Icons.Filled.SwitchAccessShortcut,
+            contentDescription = stringResource(R.string.skip_forward_10),
+            buttonSize = layoutTokens.skipButtonSize,
+            iconSize = layoutTokens.skipIconSize,
+            iconModifier = Modifier.rotate(90f)
+        )
         Spacer(Modifier.width(layoutTokens.timelineItemSpacing))
         Text(
             text = "-${formatMillis(remainingMs)}",
             textAlign = TextAlign.Start,
-            modifier = Modifier.width(layoutTokens.timelineTextWidth)
+            maxLines = 1,
+            softWrap = false
         )
     }
 
@@ -122,5 +152,35 @@ internal fun PlayerPlaybackControls(
                 modifier = Modifier.size(layoutTokens.playIconSize)
             )
         }
+    }
+}
+
+@Composable
+private fun SkipButton(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    contentDescription: String,
+    buttonSize: Dp,
+    iconSize: Dp,
+    iconModifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.size(buttonSize),
+        shape = CircleShape,
+        contentPadding = PaddingValues(),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondary,
+            contentColor = MaterialTheme.colorScheme.onSecondary
+        ),
+        border = null
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = Modifier
+                .size(iconSize)
+                .then(iconModifier)
+        )
     }
 }

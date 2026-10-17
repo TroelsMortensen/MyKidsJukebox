@@ -9,7 +9,6 @@ internal data class PlayerLayoutTokens(
     val closeButtonHeight: Dp,
     val closeIconSize: Dp,
     val closeCornerRadius: Dp,
-    val timelineTextWidth: Dp,
     val timelineItemSpacing: Dp,
     val timelineHeight: Dp,
     val controlsSpacing: Dp,
@@ -17,6 +16,9 @@ internal data class PlayerLayoutTokens(
     val playIconSize: Dp,
     val restartButtonSize: Dp,
     val restartIconSize: Dp,
+    val skipButtonSize: Dp,
+    val skipIconSize: Dp,
+    val skipButtonSpacing: Dp,
     val playbackControlsSpacing: Dp,
     val queueSectionSpacing: Dp,
     val queueItemBaseSize: Dp,
@@ -35,6 +37,8 @@ internal fun buildPlayerLayoutTokens(
 
     val closeButtonHeight = (maxWidth * 0.14f).coerceIn(100.dp, 136.dp)
     val playButtonHeight = (maxWidth * 0.14f).coerceIn(100.dp, 136.dp)
+    val restartButtonSize = playButtonHeight
+    val skipButtonSize = restartButtonSize * 0.5f
     val queueItemBaseSize = (maxWidth * if (isWideLayout) 0.14f else 0.20f).coerceIn(72.dp, 148.dp)
 
     return PlayerLayoutTokens(
@@ -43,14 +47,16 @@ internal fun buildPlayerLayoutTokens(
         closeButtonHeight = closeButtonHeight,
         closeIconSize = (closeButtonHeight * 0.65f).coerceIn(56.dp, 88.dp),
         closeCornerRadius = closeButtonHeight / 2f,
-        timelineTextWidth = (maxWidth * 0.12f).coerceIn(64.dp, 104.dp),
-        timelineItemSpacing = (maxWidth * 0.015f).coerceIn(8.dp, 14.dp),
+        timelineItemSpacing = (maxWidth * 0.008f).coerceIn(4.dp, 8.dp),
         timelineHeight = (maxWidth * 0.012f).coerceIn(8.dp, 14.dp),
         controlsSpacing = (maxHeight * 0.006f).coerceIn(4.dp, 10.dp),
         playButtonHeight = playButtonHeight,
         playIconSize = (playButtonHeight * 0.82f).coerceIn(72.dp, 188.dp),
-        restartButtonSize = playButtonHeight,
+        restartButtonSize = restartButtonSize,
         restartIconSize = (playButtonHeight * 0.55f).coerceIn(48.dp, 80.dp),
+        skipButtonSize = skipButtonSize,
+        skipIconSize = skipButtonSize * 0.7f,
+        skipButtonSpacing = (maxWidth * 0.008f).coerceIn(4.dp, 8.dp),
         playbackControlsSpacing = (maxWidth * 0.02f).coerceIn(8.dp, 16.dp),
         queueSectionSpacing = (maxHeight * 0.006f).coerceIn(4.dp, 10.dp),
         queueItemBaseSize = queueItemBaseSize,

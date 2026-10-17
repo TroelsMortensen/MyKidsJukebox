@@ -39,6 +39,8 @@ fun PlayerScreen(
         onBack = handleBack,
         onPlayPauseClick = viewModel::togglePlayPause,
         onRestartClick = viewModel::restartCurrentTrack,
+        onSkipBackClick = { viewModel.seekBy(-PlayerViewModel.SKIP_MS) },
+        onSkipForwardClick = { viewModel.seekBy(PlayerViewModel.SKIP_MS) },
         onQueueItemClick = viewModel::playQueueItem,
         modifier = modifier
     )
